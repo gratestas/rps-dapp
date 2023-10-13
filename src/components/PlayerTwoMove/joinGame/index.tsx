@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { Address, Hash } from 'viem';
 import {
   useParams,
@@ -7,17 +6,22 @@ import {
   useRouteLoaderData,
 } from 'react-router-dom';
 
-import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { validate } from './validate';
+import { FormState } from './types';
+import { Form, FormGroup, Label, Select, ValidationError } from './styled';
 
-import { GameDetails } from '../../../utils/readContract';
-import { rpsContract } from '../../../data/config';
-import { publicClient, walletClient } from '../../../config/provider';
 import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
+import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
+import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { GameDetails } from '../../../utils/readContract';
+
+import { rpsContract } from '../../../data/config';
+import { publicClient, walletClient } from '../../../config/provider';
+import useFormValidation from '../../../hooks/useFormValidation';
+
 const JoinGame = () => {
-  const [move, setMove] = useState<PlayerMove>();
   const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,6 +31,11 @@ const JoinGame = () => {
 
   const { account } = useWeb3Connection();
   const { setGamePhase } = useGameContext();
+  const { values, errors, touched, handleChange, handleBlur } =
+    useFormValidation<FormState>({
+      initialValues: { move: PlayerMove.Null },
+      validate: validate,
+    });
 
   useEffect(() => {
     (async () => {
@@ -47,9 +56,12 @@ const JoinGame = () => {
     })();
   }, [revalidator, setGamePhase, txHash]);
 
+  const hasError = Object.values(errors).some((error) => error !== '');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!move || !gameDetails.stake || !account) return;
+    // if (!move || !gameDetails.stake || !account) return;
+    if (hasError) return;
     setIsLoading(true);
     try {
       const txHash_ = await (walletClient as any).writeContract({
@@ -57,7 +69,7 @@ const JoinGame = () => {
         account: account,
         abi: rpsContract.abi,
         functionName: 'play',
-        args: [move],
+        args: [values.move],
         value: gameDetails.stake,
       });
       setTxHash(txHash_);
@@ -73,11 +85,10 @@ const JoinGame = () => {
         <FormGroup>
           <Label>Move Choice:</Label>
           <Select
-            value={move}
-            onChange={(e) => {
-              const selectedMove = parseInt(e.target.value) as PlayerMove;
-              setMove(selectedMove);
-            }}
+            name='move'
+            value={values.move}
+            onBlur={handleBlur}
+            onChange={handleChange}
           >
             {Object.keys(PlayerMove).map((key) => {
               const moveValue = PlayerMove[key as keyof typeof PlayerMove];
@@ -91,6 +102,9 @@ const JoinGame = () => {
               );
             })}
           </Select>
+          {errors.move && touched.move ? (
+            <ValidationError>{errors.move}</ValidationError>
+          ) : null}
         </FormGroup>
 
         <Button type='submit' size='small' isLoading={isLoading}>
@@ -102,26 +116,3 @@ const JoinGame = () => {
 };
 
 export default JoinGame;
-
-const Form = styled.form`
-  text-align: left;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  font-size: 16px;
-  display: block;
-  margin-bottom: 5px;
-`;
-
-const Select = styled.select`
-  font-size: 16px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-`;
