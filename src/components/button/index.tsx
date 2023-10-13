@@ -13,7 +13,7 @@ const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   return (
-    <StyledButton {...rest} disabled={isLoading} size={size}>
+    <StyledButton {...rest} disabled={rest.disabled} size={size}>
       {isLoading ? (
         <>
           {children}
@@ -37,9 +37,12 @@ const StyledButton = styled.button<ButtonProps>`
   padding: ${(props) => (props.size === 'small' ? '12px 20px' : '20px 20px')};
   border: none;
   border-radius: 8px;
-  background-color: ${(props) => (props.isLoading ? '#38343462b' : '#28262b')};
+  background-color: ${(props) => (props.disabled ? '#636161' : '#0e0e0f')};
   color: #fff;
-  cursor: ${(props) => (props.isLoading ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  &:hover {
+    background-color: ${(props) => !props.disabled && '#242427'};
+  }
 `;
 
 const LoadingIndicator = styled.div<ButtonProps>`
