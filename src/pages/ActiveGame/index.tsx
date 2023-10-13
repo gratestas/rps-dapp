@@ -77,7 +77,7 @@ const ActiveGame: React.FC = () => {
   return (
     <Container>
       <button onClick={() => navigate(-1)}>go Back</button>
-      <Header>Active Game Details</Header>
+      <Title>Active Game</Title>
       <div>
         <p>Stake: {formatEther(gameDetails.stake)} ETH</p>
         <p>Timeout: {Number(gameDetails.timeout) / 60} mins</p>
@@ -97,12 +97,13 @@ export default ActiveGame;
 
 const Container = styled.div`
   max-width: 1200px;
-  margin: auto;
+  margin: 4rem auto;
   padding: 20px;
+  text-align: center;
 `;
 
-const Header = styled.h1`
-  font-size: 24px;
+const Title = styled.h1`
+  font-size: 36px;
   margin-bottom: 20px;
 `;
 
@@ -124,7 +125,7 @@ const Card = styled.div`
   padding: 20px;
   margin: 0 10px;
   background-color: #f9f9f9;
-
+  text-align: left;
   @media (max-width: 768px) {
     margin: 10px 0;
   }
@@ -132,7 +133,8 @@ const Card = styled.div`
 
 const Timer = styled.div`
   position: absolute;
-  top: 16px;
+  text-align: right;
+  top: 18px;
   right: 16px;
   width: 110px;
   font-size: 14px;
@@ -154,5 +156,6 @@ const Badge = styled.div<{ $winner?: boolean }>`
 
 const PlayerInfo = styled.div`
   font-size: 16px;
+  font-weight: 500;
   margin-bottom: 10px;
 `;

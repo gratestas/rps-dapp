@@ -56,7 +56,9 @@ const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
       </>
     ),
   };
-  return <Container>{renderMap[gamePhase]}</Container>;
+  return (
+    <Container>{remainingTime !== null && renderMap[gamePhase]}</Container>
+  );
 };
 
 export default PlayerTwoMove;

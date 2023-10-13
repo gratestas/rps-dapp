@@ -3,23 +3,7 @@ import styled from 'styled-components';
 
 import NewGame from '../../components/newGame';
 import JoinGame from '../../components/joinGame';
-
-enum Tabs {
-  NewGame = 'New Game',
-  JoinGame = 'Join Game',
-}
-
-const Tab: React.FC<{ tab: Tabs; active: boolean; onClick: () => void }> = ({
-  tab,
-  active,
-  onClick,
-}) => {
-  return (
-    <div className={`tab ${active ? 'active' : ''}`} onClick={onClick}>
-      {tab}
-    </div>
-  );
-};
+import Tab, { Tabs } from '../../components/tab';
 
 const CreateGame = () => {
   const [activeTab, setActiveTab] = useState<Tabs>(Tabs.NewGame);
@@ -32,15 +16,7 @@ const CreateGame = () => {
   return (
     <Container>
       <Stack>
-        <nav
-          style={{
-            width: '50%',
-            margin: '0 auto',
-            display: 'flex',
-            justifyContent: 'space-between',
-            cursor: 'pointer',
-          }}
-        >
+        <Nav>
           <Tab
             tab={Tabs.NewGame}
             active={activeTab === Tabs.NewGame}
@@ -51,7 +27,7 @@ const CreateGame = () => {
             active={activeTab === Tabs.JoinGame}
             onClick={() => setActiveTab(Tabs.JoinGame)}
           />
-        </nav>
+        </Nav>
         {tabComponents[activeTab]}
       </Stack>
     </Container>
@@ -72,4 +48,13 @@ const Stack = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+`;
+
+const Nav = styled.nav`
+  width: 50%;
+  margin: 0 auto;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
 `;

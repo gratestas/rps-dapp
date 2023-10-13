@@ -34,6 +34,7 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
   /*   var remainingTime = 1;
   var didPlayerTwoPlay = true;
   var gameDetailsstake = 1; */
+  console.log({ remainingTime });
   useEffect(() => {
     // if (gamePhase !== GamePhase.GameOver) return;
 
@@ -106,7 +107,9 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     ),
   };
 
-  return <Container>{renderMap[gamePhase]}</Container>;
+  return (
+    <Container>{remainingTime !== null && renderMap[gamePhase]}</Container>
+  );
 };
 
 export default PlayerOneMove;

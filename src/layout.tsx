@@ -19,5 +19,4 @@ const MainContainer = styled.div`
   width: 96%;
   height: 80vh;
   margin: 0 auto;
-  border: 1px solid green;
 `;
