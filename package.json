@@ -49,5 +49,6 @@
   },
   "main": "index.tsx",
   "author": "gratestas <stasgrate@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {}
 }

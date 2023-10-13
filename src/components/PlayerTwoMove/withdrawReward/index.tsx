@@ -1,33 +1,13 @@
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
-import { goerli } from 'viem/chains';
-import {
-  Address,
-  Hash,
-  createPublicClient,
-  createWalletClient,
-  custom,
-  http,
-} from 'viem';
+import { Address, Hash } from 'viem';
 
-import {
-  InjectedProvider,
-  useWeb3Connection,
-} from '../../../context/Web3ConnectionContext';
+import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
-import { rpsContract } from '../../../data/config';
 
-// TODO: encounted in many components throuhout the app. Refactor
-const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
-const walletClient = createWalletClient({
-  chain: goerli,
-  transport: custom(ethereum!),
-});
-const publicClient = createPublicClient({
-  chain: goerli,
-  transport: http(),
-});
+import { rpsContract } from '../../../data/config';
+import { publicClient, walletClient } from '../../../config/provider';
 
 const WithdrawReward = () => {
   const { id: gameId } = useParams();
@@ -43,7 +23,6 @@ const WithdrawReward = () => {
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
-        chain: goerli,
         abi: rpsContract.abi,
         functionName: 'j1Timeout',
       });
@@ -58,7 +37,7 @@ const WithdrawReward = () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          txHash,
+          hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);
       } catch (error) {

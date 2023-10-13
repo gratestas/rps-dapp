@@ -9,13 +9,14 @@ import {
 
 import { Player, getGameDetails } from '../../utils/readContract';
 import { getLabel, shortenAddress } from '../../utils/shortenAddress';
-import { convertUnixToDate } from '../../utils/time';
+import { convertUnixToDate, formatTime } from '../../utils/time';
 import { LoaderData } from './types';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import PlayerTwoMove from '../../components/PlayerTwoMove';
 import PlayerOneMove from '../../components/PlayerOneMove';
 import { useState } from 'react';
 import { GamePhase, useGameContext } from '../../context/GameContext';
+import useCountDown from '../../hooks/useCountDown';
 
 export const loader = (async ({ params }: LoaderFunctionArgs) => {
   return await getGameDetails(params.id as Address);
@@ -27,17 +28,33 @@ const ActiveGame: React.FC = () => {
   const { gamePhase } = useGameContext();
   const navigate = useNavigate();
 
+  const remainingTime = useCountDown({
+    lastAction: Number(gameDetails.lastAction),
+    timeout: Number(gameDetails.timeout),
+  });
+
+  const playerTurn = {
+    [GamePhase.PlayerTwoPlaying]: gameDetails.player2.address,
+    [GamePhase.Reveal]: gameDetails.player1.address,
+    [GamePhase.GameOver]: zeroAddress,
+  };
+
   const [winner, setWinner] = useState<Address>(zeroAddress);
   const hasWinner = !isAddressEqual(winner, zeroAddress);
   console.log({ winner });
+
   const playerCard = (player: Player, isPlayerOne: boolean) => {
     const isThisPlayerWinner = isAddressEqual(winner, player.address);
     return (
       <Card>
-        {gamePhase === GamePhase.GameOver && hasWinner && (
+        {gamePhase === GamePhase.GameOver && hasWinner ? (
           <Badge $winner={isThisPlayerWinner}>
             {isThisPlayerWinner ? 'Winner' : 'Loser'}
           </Badge>
+        ) : (
+          isAddressEqual(playerTurn[gamePhase], player.address) && (
+            <Timer>time left: {formatTime(remainingTime ?? 0)}</Timer>
+          )
         )}
         <PlayerInfo>
           Player {isPlayerOne ? '1' : '2'}: {getLabel(player.address, account)}
@@ -110,6 +127,15 @@ const Card = styled.div`
   @media (max-width: 768px) {
     margin: 10px 0;
   }
+`;
+
+const Timer = styled.div`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 110px;
+  font-size: 14px;
+  font-weight: 500;
 `;
 
 const Badge = styled.div<{ $winner?: boolean }>`

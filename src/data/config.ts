@@ -1,5 +1,3 @@
-import { rpsAbi, rpsBytecode } from './rpsABI';
-
 export const hasherContract = {
   address: '0xc85Ec5aac0b8699ebbc4Bb13B9d21F7934ea2e1d',
   abi: [

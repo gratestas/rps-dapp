@@ -6,7 +6,7 @@ interface CountDownProps {
 }
 
 const useCountDown = ({ lastAction, timeout }: CountDownProps) => {
-  const [remainingTime, setRemainingTime] = useState<number>(0);
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
 
   useEffect(() => {
     if (!timeout || !lastAction) return;

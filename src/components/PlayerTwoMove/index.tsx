@@ -23,10 +23,10 @@ const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
       <>
-        {remainingTime > 0 ? (
-          <JoinGame />
-        ) : (
+        {remainingTime === 0 ? (
           <div>Sorry, you didn't play on time</div>
+        ) : (
+          <JoinGame />
         )}
       </>
     ),

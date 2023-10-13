@@ -1,37 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
-
+import { Address, Hash } from 'viem';
 import {
-  Address,
-  Hash,
-  createPublicClient,
-  createWalletClient,
-  custom,
-  http,
-} from 'viem';
-import { goerli } from 'viem/chains';
+  useParams,
+  useRevalidator,
+  useRouteLoaderData,
+} from 'react-router-dom';
 
-import {
-  InjectedProvider,
-  useWeb3Connection,
-} from '../../../context/Web3ConnectionContext';
 import { PlayerMove } from '../../newGame';
-import { GameDetails } from '../../../utils/readContract';
-import { rpsContract } from '../../../data/config';
+
+import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
-const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
-
-const walletClient = createWalletClient({
-  chain: goerli,
-  transport: custom(ethereum!),
-});
-
-const publicClient = createPublicClient({
-  chain: goerli,
-  transport: http(),
-});
+import { GameDetails } from '../../../utils/readContract';
+import { rpsContract } from '../../../data/config';
+import { publicClient, walletClient } from '../../../config/provider';
 
 const JoinGame = () => {
   const [move, setMove] = useState<PlayerMove>();
@@ -39,6 +22,7 @@ const JoinGame = () => {
 
   const { id: gameId } = useParams();
   const gameDetails = useRouteLoaderData('game') as GameDetails;
+  const revalidator = useRevalidator();
 
   const { account } = useWeb3Connection();
   const { setGamePhase } = useGameContext();
@@ -48,14 +32,15 @@ const JoinGame = () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          txHash,
+          hash: txHash,
         });
         setGamePhase(GamePhase.Reveal);
+        revalidator.revalidate();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
       }
     })();
-  }, [setGamePhase, txHash]);
+  }, [revalidator, setGamePhase, txHash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

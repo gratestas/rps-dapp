@@ -1,15 +1,15 @@
+import { useEffect, useState } from 'react';
 import { useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
+import { Address } from 'viem';
 
 import { PlayerMove } from '../newGame';
-
-import { GameDetails, getGameOutcome } from '../../utils/readContract';
-import useCountDown from '../../hooks/useCountDown';
 import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';
-import { useEffect, useState } from 'react';
-import { Address } from 'viem';
+
 import { GamePhase, useGameContext } from '../../context/GameContext';
+import useCountDown from '../../hooks/useCountDown';
+import { GameDetails, getGameOutcome } from '../../utils/readContract';
 
 interface Props {
   winner: Address;
@@ -35,7 +35,8 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
   var didPlayerTwoPlay = true;
   var gameDetailsstake = 1; */
   useEffect(() => {
-    if (gameDetails.stake > 0 && playedHand === PlayerMove.Null) return;
+    if (gamePhase !== GamePhase.GameOver) return;
+    if (gameDetails.stake > 0) return;
     (async () => {
       console.log({ playedHand });
       const isWinner = await getGameOutcome(
@@ -53,11 +54,11 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     gameDetails.player2.hand,
     gameDetails.stake,
     gameId,
+    gamePhase,
     playedHand,
     setWinner,
   ]);
 
-  console.log({ gamePhase });
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
       <>

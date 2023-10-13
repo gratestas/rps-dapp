@@ -3,22 +3,15 @@ import {
   Address,
   Hash,
   TransactionReceipt,
-  createPublicClient,
-  createWalletClient,
-  custom,
-  http,
   parseEther,
   parseUnits,
 } from 'viem';
-import { goerli } from 'viem/chains';
 
 import { hasherContract, rpsContract } from '../../data/config';
-import {
-  InjectedProvider,
-  useWeb3Connection,
-} from '../../context/Web3ConnectionContext';
+import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { publicClient, walletClient } from '../../config/provider';
 
 export enum PlayerMove {
   Null = 0,
@@ -35,23 +28,11 @@ type GameFormState = {
   stake: string | null;
 };
 
-const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
-
-const walletClient = createWalletClient({
-  chain: goerli,
-  transport: custom(ethereum!),
-});
-
-const publicClient = createPublicClient({
-  chain: goerli,
-  transport: http(),
-});
-
 const NewGame: React.FC = () => {
   const { account } = useWeb3Connection();
   const navigate = useNavigate();
 
-  const [hash, setHash] = useState<Hash>();
+  const [txHash, setTxHash] = useState<Hash>();
   const [value, setValue] = useState<GameFormState>({
     move: PlayerMove.Null,
     salt: null,
@@ -76,14 +57,13 @@ const NewGame: React.FC = () => {
         args: [value.move, parseUnits(value.salt.toString(), 18)],
       });
 
-      const txHash = await (walletClient as any).deployContract({
+      const txHash_ = await (walletClient as any).deployContract({
         ...rpsContract,
         account,
-        chain: goerli,
         args: [hiddenHand, value.player2Address],
         value: parseEther(value.stake?.toString()),
       });
-      setHash(txHash);
+      setTxHash(txHash_);
     } catch (error) {
       console.error('Error creating game:', error);
     }
@@ -91,12 +71,12 @@ const NewGame: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      if (!hash) return;
+      if (!txHash) return;
       try {
         const receipt: TransactionReceipt = await (
           publicClient as any
         ).waitForTransactionReceipt({
-          hash,
+          hash: txHash,
         });
 
         navigate(`game/${receipt.contractAddress}`);
@@ -110,7 +90,7 @@ const NewGame: React.FC = () => {
         localStorage.removeItem('gamePhase');
       }
     })();
-  }, [hash, navigate]);
+  }, [txHash, navigate]);
 
   return (
     <Container>

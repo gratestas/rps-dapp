@@ -1,12 +1,7 @@
-import { Address, Hash, createPublicClient, http } from 'viem';
-import { goerli } from 'viem/chains';
+import { Address, Hash } from 'viem';
 import { rpsContract } from '../data/config';
 import { PlayerMove } from '../components/newGame';
-
-export const publicClient = createPublicClient({
-  chain: goerli,
-  transport: http(),
-});
+import { publicClient } from '../config/provider';
 
 export type Player = {
   address: Address;

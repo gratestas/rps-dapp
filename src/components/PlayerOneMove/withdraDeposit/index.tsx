@@ -1,40 +1,53 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useRevalidator } from 'react-router-dom';
 import styled from 'styled-components';
-import { Address, createWalletClient, custom } from 'viem';
+import { Address, Hash } from 'viem';
 import { goerli } from 'viem/chains';
 
-import {
-  InjectedProvider,
-  useWeb3Connection,
-} from '../../../context/Web3ConnectionContext';
+import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { rpsContract } from '../../../data/config';
-
-// TODO: encounted in many components throuhout the app. Refactor
-const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
-const walletClient = createWalletClient({
-  chain: goerli,
-  transport: custom(ethereum!),
-});
+import { useEffect, useState } from 'react';
+import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { publicClient, walletClient } from '../../../config/provider';
 
 const WithdrawDeposit = () => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
+  const { setGamePhase } = useGameContext();
+  const revalidator = useRevalidator();
+
+  const [txHash, setTxHash] = useState<Hash>();
 
   const handleWithdrawal = async () => {
     console.log('deposit withdrawn');
     if (!account) return;
     try {
-      await (walletClient as any).writeContract({
+      const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
         chain: goerli,
         abi: rpsContract.abi,
         functionName: 'j2Timeout',
       });
+      setTxHash(txHash_);
     } catch (error) {
       console.error('Error: Failed to withdraw deposit', error);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (!txHash) return;
+      try {
+        await (publicClient as any).waitForTransactionReceipt({
+          hash: txHash,
+        });
+        setGamePhase(GamePhase.GameOver);
+        revalidator.revalidate();
+      } catch (error) {
+        console.error('Error: Failed to fetch Tx Receipt', error);
+      }
+    })();
+  }, [revalidator, setGamePhase, txHash]);
 
   return (
     <div>

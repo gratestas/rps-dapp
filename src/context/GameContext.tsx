@@ -1,5 +1,6 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { useRevalidator } from 'react-router-dom';
 
 export enum GamePhase {
   PlayerTwoPlaying,

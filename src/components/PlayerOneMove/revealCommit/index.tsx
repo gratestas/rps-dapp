@@ -1,24 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-
-import { Address, createWalletClient, custom, parseUnits } from 'viem';
-import { goerli } from 'viem/chains';
+import { Address, Hash, parseUnits } from 'viem';
+import { useParams, useRevalidator } from 'react-router-dom';
 
 import { PlayerMove } from '../../newGame';
-import {
-  InjectedProvider,
-  useWeb3Connection,
-} from '../../../context/Web3ConnectionContext';
-import { useParams } from 'react-router-dom';
-import { rpsContract } from '../../../data/config';
+
+import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
-const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
-
-const walletClient = createWalletClient({
-  chain: goerli,
-  transport: custom(ethereum!),
-});
+import { rpsContract } from '../../../data/config';
+import { publicClient, walletClient } from '../../../config/provider';
 
 interface Props {
   playedHand: PlayerMove;
@@ -29,27 +20,45 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
   const { setGamePhase } = useGameContext();
+  const revalidator = useRevalidator();
 
   const [salt, setSalt] = useState<number | null>(null);
+  const [txHash, setTxHash] = useState<Hash>();
 
   const handleReveal = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('revealing commit');
     if (!account || playedHand === PlayerMove.Null || !salt) return;
     try {
-      await (walletClient as any).writeContract({
+      const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
         abi: rpsContract.abi,
         functionName: 'solve',
         args: [playedHand, parseUnits(salt.toString(), 18)],
       });
-      setGamePhase(GamePhase.GameOver);
-      localStorage.setItem('playedHand', JSON.stringify(playedHand));
+      console.log(txHash_);
+      setTxHash(txHash_);
     } catch (error) {
       console.error('Error: Failed to Reveal commit', error);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (!txHash) return;
+      try {
+        await (publicClient as any).waitForTransactionReceipt({
+          hash: txHash,
+        });
+        setGamePhase(GamePhase.GameOver);
+        localStorage.setItem('playedHand', JSON.stringify(playedHand));
+        revalidator.revalidate();
+      } catch (error) {
+        console.error('Error: Failed to fetch Tx Receipt', error);
+      }
+    })();
+  }, [playedHand, revalidator, setGamePhase, txHash]);
 
   return (
     <div>
