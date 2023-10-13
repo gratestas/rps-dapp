@@ -1,11 +1,13 @@
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
-import { shortenAddress } from '../../utils/shortenAddress';
+import Button from '../button';
 
 const ConnectButtion = () => {
-  const { isConnected, connect, account } = useWeb3Connection();
+  const { connect } = useWeb3Connection();
   return (
     <div>
-      <button onClick={async () => await connect()}>Connect</button>
+      <Button size='small' onClick={async () => await connect()}>
+        Connect
+      </Button>
     </div>
   );
 };
