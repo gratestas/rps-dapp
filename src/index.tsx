@@ -1,13 +1,40 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import { Web3ConnectionProvider } from './context/Web3ConnectionContext';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+import Layout from './layout';
+import CreateGame from './pages/CreateGame';
+import ActiveGame, { loader as ActiveGameLoader } from './pages/ActiveGame';
+import GlobalStyle from './globalStyles';
+import { GameProvider } from './context/GameContext';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    children: [
+      { index: true, element: <CreateGame /> },
+      {
+        path: 'game/:id',
+        id: 'game',
+        element: (
+          <GameProvider>
+            <ActiveGame />
+          </GameProvider>
+        ),
+        loader: ActiveGameLoader,
+      },
+    ],
+  },
+]);
+
+const App = () => (
+  <Web3ConnectionProvider>
+    <GlobalStyle />
+    <RouterProvider router={router} />;
+  </Web3ConnectionProvider>
 );
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+
+const container = document.getElementById('root')!;
+ReactDOM.createRoot(container).render(<App />);
