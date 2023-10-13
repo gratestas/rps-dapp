@@ -38,6 +38,7 @@ const NewGame: React.FC = () => {
     useFormValidation<GameFormState>({
       initialValues,
       validate,
+      optionalArg: account,
     });
 
   const [txHash, setTxHash] = useState<Hash>();
