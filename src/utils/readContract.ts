@@ -1,7 +1,7 @@
 import { Address, Hash } from 'viem';
 import { rpsContract } from '../data/config';
-import { PlayerMove } from '../components/newGame';
 import { publicClient } from '../config/provider';
+import { PlayerMove } from '../components/newGame/types';
 
 export type Player = {
   address: Address;

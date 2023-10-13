@@ -3,14 +3,13 @@ import styled from 'styled-components';
 import { Address, Hash, parseUnits } from 'viem';
 import { useParams, useRevalidator } from 'react-router-dom';
 
-import { PlayerMove } from '../../newGame';
-
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
 import Button from '../../button';
+import { PlayerMove } from '../../newGame/types';
 
 interface Props {
   playedHand: PlayerMove;
@@ -69,7 +68,6 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
   return (
     <div>
       <p>Player 2 has played. Reveal your commit.</p>
-      {/* Add the code for revealing the commit here */}
       <Form onSubmit={handleReveal}>
         <FormGroup>
           <Label>Played Hand:</Label>

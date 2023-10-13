@@ -3,13 +3,13 @@ import { useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
 import { Address } from 'viem';
 
-import { PlayerMove } from '../newGame';
 import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';
 
 import { GamePhase, useGameContext } from '../../context/GameContext';
 import useCountDown from '../../hooks/useCountDown';
 import { GameDetails, getGameOutcome } from '../../utils/readContract';
+import { PlayerMove } from '../newGame/types';
 
 interface Props {
   winner: Address;
@@ -47,7 +47,6 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
       )
         return;
       console.log({ playedHand });
-      // console.log(gameDetails.stake > 0);
       console.log(playedHand === PlayerMove.Null);
       console.log(gameDetails.player2.hand === PlayerMove.Null);
       const isWinner = await getGameOutcome(

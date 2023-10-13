@@ -1,77 +1,48 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Hash, TransactionReceipt, parseEther, parseUnits } from 'viem';
+
+import { validate } from './validate';
+import { GameFormState, PlayerMove } from './types';
 import {
-  Address,
-  Hash,
-  TransactionReceipt,
-  isAddress,
-  parseEther,
-  parseUnits,
-} from 'viem';
+  Container,
+  Form,
+  Title,
+  SubTitle,
+  FormGroup,
+  Label,
+  Select,
+  ValidationError,
+  Input,
+} from './styled';
+
+import Button from '../button';
 
 import { hasherContract, rpsContract } from '../../data/config';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 import { publicClient, walletClient } from '../../config/provider';
-import Button from '../button';
+import useFormValidation from '../../hooks/useFormValidation';
 
-export const isValidAddress = (address: string): boolean => {
-  const addressRegex = /^(0x)?[0-9a-fA-F]{40}$/;
-  return addressRegex.test(address);
-};
-
-export enum PlayerMove {
-  Null = 0,
-  Rock = 1,
-  Paper = 2,
-  Scissors = 3,
-  Spock = 4,
-  Lizard = 5,
-}
-type GameFormState = {
-  move: PlayerMove;
-  salt: number | null;
-  player2Address: Address | string;
-  stake: string;
-};
-type FormErrors = Partial<Record<keyof GameFormState, string>>;
-type Touched = Partial<Record<keyof GameFormState, boolean>>;
-
-const validate = (newValue: GameFormState): FormErrors => {
-  const newErrors: FormErrors = {};
-
-  if (newValue.move === PlayerMove.Null)
-    newErrors.move = 'Please select your move.';
-  if (newValue.salt === null) newErrors.salt = 'Please enter a secret code.';
-  if (newValue.player2Address === '') {
-    newErrors.player2Address = 'Please enter Player 2 address.';
-  } else if (!isValidAddress(newValue.player2Address)) {
-    newErrors.player2Address = 'Please enter a valid address';
-  }
-
-  if (newValue.stake === '') newErrors.stake = 'Please enter a bet amount.';
-  console.log({ newErrors });
-  return newErrors;
+const initialValues: GameFormState = {
+  move: PlayerMove.Null,
+  salt: null,
+  player2Address: '',
+  stake: '',
 };
 
 const NewGame: React.FC = () => {
   const { account } = useWeb3Connection();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { values, errors, touched, handleChange, handleBlur } =
+    useFormValidation<GameFormState>({
+      initialValues,
+      validate,
+    });
 
   const [txHash, setTxHash] = useState<Hash>();
-  const [value, setValue] = useState<GameFormState>({
-    move: PlayerMove.Null,
-    salt: null,
-    player2Address: '',
-    stake: '',
-  });
-  const [touched, setTouched] = useState<Touched>({});
-  const [validationError, setValidationError] = useState<FormErrors>(
-    validate(value)
-  );
 
-  const hasError = Object.keys(validationError).length > 0;
+  const hasError = Object.values(errors).some((error) => error !== '');
   console.log({ hasError });
 
   const handleCreateGame = async (e: React.FormEvent) => {
@@ -83,23 +54,23 @@ const NewGame: React.FC = () => {
       const hiddenHand = await (publicClient as any).readContract({
         ...hasherContract,
         functionName: 'hash',
-        args: [value.move, parseUnits(value.salt!.toString(), 18)],
+        args: [values.move, parseUnits(values.salt!.toString(), 18)],
       });
 
       const txHash_ = await (walletClient as any).deployContract({
         ...rpsContract,
         account,
-        args: [hiddenHand, value.player2Address],
-        value: parseEther(value.stake.toString()),
+        args: [hiddenHand, values.player2Address],
+        value: parseEther(values.stake.toString()),
       });
       setTxHash(txHash_);
-      setValidationError({});
     } catch (error) {
       console.error('Error creating game:', error);
       setIsLoading(false);
     }
   };
   console.log({ touched });
+  console.log({ errors });
 
   useEffect(() => {
     (async () => {
@@ -128,21 +99,16 @@ const NewGame: React.FC = () => {
 
   return (
     <Container>
-      <Header>Create Game</Header>
-      <SubHeader>Commit Your Move</SubHeader>
+      <Title>Create Game</Title>
+      <SubTitle>Commit Your Move</SubTitle>
       <Form onSubmit={handleCreateGame} noValidate>
         <FormGroup>
           <Label>Move Choice</Label>
           <Select
-            value={value.move}
+            value={values.move}
             name='move'
-            onBlur={() => setTouched({ ...touched, move: true })}
-            onChange={(e) => {
-              const selectedMove = parseInt(e.target.value) as PlayerMove;
-              console.log({ selectedMove });
-              setValue({ ...value, move: selectedMove });
-              setValidationError(validate({ ...value, move: selectedMove }));
-            }}
+            onChange={handleChange}
+            onBlur={handleBlur}
           >
             {Object.keys(PlayerMove).map((key) => {
               const moveValue = PlayerMove[key as keyof typeof PlayerMove];
@@ -156,8 +122,8 @@ const NewGame: React.FC = () => {
               );
             })}
           </Select>
-          {validationError.move && touched.move ? (
-            <ValidationError>{validationError.move}</ValidationError>
+          {errors.move && touched.move ? (
+            <ValidationError>{errors.move}</ValidationError>
           ) : null}
         </FormGroup>
         <FormGroup>
@@ -165,17 +131,12 @@ const NewGame: React.FC = () => {
           <Input
             type='number'
             name='salt'
-            value={value.salt || ''}
-            onBlur={() => setTouched({ ...touched, salt: true })}
-            onChange={(e) => {
-              setValue({ ...value, salt: Number(e.target.value) || null });
-              setValidationError(
-                validate({ ...value, salt: Number(e.target.value) })
-              );
-            }}
+            value={values.salt || ''}
+            onBlur={handleBlur}
+            onChange={handleChange}
           />
-          {validationError.salt && touched.salt ? (
-            <ValidationError>{validationError.salt}</ValidationError>
+          {errors.salt && touched.salt ? (
+            <ValidationError>{errors.salt}</ValidationError>
           ) : null}
         </FormGroup>
         <FormGroup>
@@ -184,15 +145,12 @@ const NewGame: React.FC = () => {
             type='number'
             name='stake'
             placeholder='1 ETH'
-            value={value.stake || ''}
-            onBlur={() => setTouched({ ...touched, stake: true })}
-            onChange={(e) => {
-              setValue({ ...value, stake: e.target.value });
-              setValidationError(validate({ ...value, stake: e.target.value }));
-            }}
+            value={values.stake || ''}
+            onBlur={handleBlur}
+            onChange={handleChange}
           />
-          {validationError.stake && touched.stake ? (
-            <ValidationError>{validationError.stake}</ValidationError>
+          {errors.stake && touched.stake ? (
+            <ValidationError>{errors.stake}</ValidationError>
           ) : null}
         </FormGroup>
         <FormGroup>
@@ -200,20 +158,12 @@ const NewGame: React.FC = () => {
           <Input
             type='text'
             name='player2Address'
-            value={value.player2Address ?? ''}
-            onBlur={() => setTouched({ ...touched, player2Address: true })}
-            onChange={(e) => {
-              setValue({
-                ...value,
-                player2Address: e.target.value.trim() as Address,
-              });
-              setValidationError(
-                validate({ ...value, player2Address: e.target.value })
-              );
-            }}
+            value={values.player2Address ?? ''}
+            onBlur={handleBlur}
+            onChange={handleChange}
           />
-          {validationError.player2Address && touched.player2Address ? (
-            <ValidationError>{validationError.player2Address}</ValidationError>
+          {errors.player2Address && touched.player2Address ? (
+            <ValidationError>{errors.player2Address}</ValidationError>
           ) : null}
         </FormGroup>
         <Button type='submit' disabled={hasError} isLoading={isLoading}>
@@ -225,60 +175,3 @@ const NewGame: React.FC = () => {
 };
 
 export default NewGame;
-
-const Container = styled.div`
-  width: 500px;
-  margin: auto;
-  padding: 26px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  background-color: #f9f9f9;
-  text-align: center;
-`;
-
-const Header = styled.h1`
-  margin-bottom: 10px;
-  color: #383838;
-`;
-
-const SubHeader = styled.h3`
-  font-size: 18px;
-  margin-bottom: 20px;
-`;
-
-const Form = styled.form`
-  text-align: left;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  font-size: 16px;
-  display: block;
-  margin-bottom: 5px;
-`;
-
-const Select = styled.select`
-  font-size: 16px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-`;
-
-const Input = styled.input`
-  font-size: 16px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-`;
-
-const ValidationError = styled.p`
-  font-size: 16px;
-  color: red;
-`;

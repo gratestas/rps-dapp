@@ -7,8 +7,6 @@ import {
   useRouteLoaderData,
 } from 'react-router-dom';
 
-import { PlayerMove } from '../../newGame';
-
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
@@ -16,6 +14,7 @@ import { GameDetails } from '../../../utils/readContract';
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
 import Button from '../../button';
+import { PlayerMove } from '../../newGame/types';
 
 const JoinGame = () => {
   const [move, setMove] = useState<PlayerMove>();
