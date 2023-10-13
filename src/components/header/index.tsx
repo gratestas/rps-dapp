@@ -13,15 +13,22 @@ const StyledHeader = styled.header`
 `;
 
 const Logo = styled.div`
-  font-size: 30px;
-  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 16px;
   color: black;
 `;
 
 const Header = () => {
   return (
     <StyledHeader>
-      <Logo>Rock Paper Scissors</Logo>
+      <Logo>
+        <span>Rock.</span>
+        <span>Paper.</span>
+        <span>Scissors.</span>
+      </Logo>
       <AccountPanel />
     </StyledHeader>
   );
