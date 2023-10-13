@@ -8,6 +8,7 @@ import { rpsContract } from '../../../data/config';
 import { useEffect, useState } from 'react';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 import { publicClient, walletClient } from '../../../config/provider';
+import Button from '../../button';
 
 const WithdrawDeposit = () => {
   const { id: gameId } = useParams();
@@ -16,11 +17,13 @@ const WithdrawDeposit = () => {
   const revalidator = useRevalidator();
 
   const [txHash, setTxHash] = useState<Hash>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleWithdrawal = async () => {
     console.log('deposit withdrawn');
     if (!account) return;
     try {
+      setIsLoading(true);
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
@@ -31,6 +34,7 @@ const WithdrawDeposit = () => {
       setTxHash(txHash_);
     } catch (error) {
       console.error('Error: Failed to withdraw deposit', error);
+      setIsLoading(false);
     }
   };
 
@@ -39,12 +43,14 @@ const WithdrawDeposit = () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
+          confirmations: 3,
           hash: txHash,
         });
-        setGamePhase(GamePhase.GameOver);
         revalidator.revalidate();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, [revalidator, setGamePhase, txHash]);
@@ -52,19 +58,11 @@ const WithdrawDeposit = () => {
   return (
     <div>
       <p>Player 2 didn't play on time</p>
-      <Button onClick={handleWithdrawal}>Withdraw deposit</Button>
+      <Button onClick={handleWithdrawal} size='small' isLoading={isLoading}>
+        Withdraw deposit
+      </Button>
     </div>
   );
 };
 
 export default WithdrawDeposit;
-
-const Button = styled.button`
-  font-size: 14px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  background-color: #28262b;
-  color: #fff;
-  cursor: pointer;
-`;

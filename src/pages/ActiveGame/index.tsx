@@ -42,6 +42,7 @@ const ActiveGame: React.FC = () => {
   const [winner, setWinner] = useState<Address>(zeroAddress);
   const hasWinner = !isAddressEqual(winner, zeroAddress);
   console.log({ winner });
+  console.log({ hasWinner });
 
   const playerCard = (player: Player, isPlayerOne: boolean) => {
     const isThisPlayerWinner = isAddressEqual(winner, player.address);

@@ -9,8 +9,6 @@ import useCountDown from '../../hooks/useCountDown';
 import JoinGame from './joinGame';
 import WithdrawReward from './withdrawReward';
 
-//const rpsAddress = '0x215B2434F08EF39dFeadEE92e4eB999B3E6c6306';
-
 const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
   const { gamePhase } = useGameContext();

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import Button from '../button';
 
 const Container = styled.div`
   width: 500px;
@@ -24,17 +25,6 @@ const Input = styled.input`
   border-radius: 4px;
   box-sizing: border-box;
   margin-bottom: 20px;
-`;
-
-const Button = styled.button`
-  font-size: 16px;
-  width: 100%;
-  padding: 20px 20px;
-  border: none;
-  border-radius: 10px;
-  background-color: #28262b;
-  color: #fff;
-  cursor: pointer;
 `;
 
 const JoinGameComponent: React.FC = () => {

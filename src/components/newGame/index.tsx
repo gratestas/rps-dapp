@@ -12,6 +12,7 @@ import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { publicClient, walletClient } from '../../config/provider';
+import Button from '../button';
 
 export enum PlayerMove {
   Null = 0,
@@ -31,6 +32,7 @@ type GameFormState = {
 const NewGame: React.FC = () => {
   const { account } = useWeb3Connection();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [txHash, setTxHash] = useState<Hash>();
   const [value, setValue] = useState<GameFormState>({
@@ -51,6 +53,7 @@ const NewGame: React.FC = () => {
         !value.stake
       )
         return;
+      setIsLoading(true);
       const hiddenHand = await (publicClient as any).readContract({
         ...hasherContract,
         functionName: 'hash',
@@ -66,6 +69,7 @@ const NewGame: React.FC = () => {
       setTxHash(txHash_);
     } catch (error) {
       console.error('Error creating game:', error);
+      setIsLoading(false);
     }
   };
 
@@ -76,6 +80,7 @@ const NewGame: React.FC = () => {
         const receipt: TransactionReceipt = await (
           publicClient as any
         ).waitForTransactionReceipt({
+          confirmations: 3,
           hash: txHash,
         });
 
@@ -88,6 +93,7 @@ const NewGame: React.FC = () => {
         // Reqired to clean storage before each new game.
         localStorage.removeItem('playedHand');
         localStorage.removeItem('gamePhase');
+        setIsLoading(false);
       }
     })();
   }, [txHash, navigate]);
@@ -149,7 +155,9 @@ const NewGame: React.FC = () => {
             }
           />
         </FormGroup>
-        <Button type='submit'>Create</Button>
+        <Button type='submit' isLoading={isLoading}>
+          Create
+        </Button>
       </Form>
     </Container>
   );
@@ -207,15 +215,4 @@ const Input = styled.input`
   border: 1px solid #ccc;
   border-radius: 6px;
   box-sizing: border-box;
-`;
-
-const Button = styled.button`
-  font-size: 16px;
-  width: 100%;
-  padding: 20px 20px;
-  border: none;
-  border-radius: 10px;
-  background-color: #28262b;
-  color: #fff;
-  cursor: pointer;
 `;

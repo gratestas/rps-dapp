@@ -35,15 +35,26 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
   var didPlayerTwoPlay = true;
   var gameDetailsstake = 1; */
   useEffect(() => {
-    if (gamePhase !== GamePhase.GameOver) return;
-    if (gameDetails.stake > 0) return;
+    // if (gamePhase !== GamePhase.GameOver) return;
+
     (async () => {
+      if (
+        // gamePhase !== GamePhase.GameOver &&
+        // gameDetails.stake > 0 &&
+        playedHand === PlayerMove.Null &&
+        gameDetails.player2.hand === PlayerMove.Null
+      )
+        return;
       console.log({ playedHand });
+      // console.log(gameDetails.stake > 0);
+      console.log(playedHand === PlayerMove.Null);
+      console.log(gameDetails.player2.hand === PlayerMove.Null);
       const isWinner = await getGameOutcome(
         playedHand,
         gameDetails.player2.hand,
         gameId as Address
       );
+      console.log({ isWinner });
       setWinner(
         isWinner ? gameDetails.player1.address : gameDetails.player2.address
       );
@@ -52,9 +63,9 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     gameDetails.player1.address,
     gameDetails.player2.address,
     gameDetails.player2.hand,
-    gameDetails.stake,
+    // gameDetails.stake,
     gameId,
-    gamePhase,
+    // gamePhase,
     playedHand,
     setWinner,
   ]);

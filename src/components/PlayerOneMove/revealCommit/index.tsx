@@ -10,6 +10,7 @@ import { GamePhase, useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
+import Button from '../../button';
 
 interface Props {
   playedHand: PlayerMove;
@@ -24,11 +25,13 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
 
   const [salt, setSalt] = useState<number | null>(null);
   const [txHash, setTxHash] = useState<Hash>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleReveal = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('revealing commit');
     if (!account || playedHand === PlayerMove.Null || !salt) return;
+    setIsLoading(true);
     try {
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
@@ -37,10 +40,11 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
         functionName: 'solve',
         args: [playedHand, parseUnits(salt.toString(), 18)],
       });
-      console.log(txHash_);
+      localStorage.setItem('playedHand', JSON.stringify(playedHand));
       setTxHash(txHash_);
     } catch (error) {
       console.error('Error: Failed to Reveal commit', error);
+      setIsLoading(false);
     }
   };
 
@@ -49,13 +53,15 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
+          confirmations: 3,
           hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);
-        localStorage.setItem('playedHand', JSON.stringify(playedHand));
         revalidator.revalidate();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, [playedHand, revalidator, setGamePhase, txHash]);
@@ -96,7 +102,9 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
           />
         </FormGroup>
 
-        <Button type='submit'>Reveal</Button>
+        <Button type='submit' size='small' isLoading={isLoading}>
+          Reveal
+        </Button>
       </Form>
     </div>
   );
@@ -134,14 +142,4 @@ const Input = styled.input`
   border: 1px solid #ccc;
   border-radius: 6px;
   box-sizing: border-box;
-`;
-
-const Button = styled.button`
-  font-size: 14px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  background-color: #28262b;
-  color: #fff;
-  cursor: pointer;
 `;

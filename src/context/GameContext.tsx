@@ -22,6 +22,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     'gamePhase',
     GamePhase.PlayerTwoPlaying
   );
+  const revalidator = useRevalidator();
 
   return (
     <GameContext.Provider value={{ gamePhase, setGamePhase }}>
