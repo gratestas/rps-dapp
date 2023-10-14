@@ -43,7 +43,7 @@ const WithdrawDeposit = () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 3,
+          confirmations: 2,
           hash: txHash,
         });
         revalidator.revalidate();

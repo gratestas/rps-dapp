@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, useRouteLoaderData } from 'react-router-dom';
+import { useNavigate, useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
-import { Address } from 'viem';
+import { Address, isAddress, isAddressEqual } from 'viem';
 
 import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';
@@ -10,6 +10,8 @@ import { GamePhase, useGameContext } from '../../context/GameContext';
 import useCountDown from '../../hooks/useCountDown';
 import { GameDetails, getGameOutcome } from '../../utils/readContract';
 import { PlayerMove } from '../newGame/types';
+import { useWeb3Connection } from '../../context/Web3ConnectionContext';
+import Button from '../button';
 
 interface Props {
   winner: Address;
@@ -18,17 +20,20 @@ interface Props {
 const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
   const { id: gameId } = useParams();
+  const navigate = useNavigate();
+
   const { gamePhase } = useGameContext();
+  const { account } = useWeb3Connection();
 
   const storedPlayedHand = localStorage.getItem('playedHand');
   const [playedHand, setPlayedHand] = useState<PlayerMove>(
     storedPlayedHand ? JSON.parse(storedPlayedHand) : PlayerMove.Null
   );
-  /* 
+
   const remainingTime = useCountDown({
     lastAction: Number(gameDetails.lastAction),
     timeout: Number(gameDetails.timeout),
-  }); */
+  });
 
   //TODO: check the below condition later
   /*   var remainingTime = 1;
@@ -40,15 +45,15 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
 
     (async () => {
       if (
-        // gamePhase !== GamePhase.GameOver &&
-        // gameDetails.stake > 0 &&
         playedHand === PlayerMove.Null &&
         gameDetails.player2.hand === PlayerMove.Null
       )
         return;
-      console.log({ playedHand });
-      console.log(playedHand === PlayerMove.Null);
-      console.log(gameDetails.player2.hand === PlayerMove.Null);
+      const [isPlayer1Winner, isPlayer2Winner] = await Promise.all([
+        getGameOutcome(playedHand, gameDetails.player2.hand, gameId as Address),
+        getGameOutcome(gameDetails.player2.hand, playedHand, gameId as Address),
+      ]);
+      console.log({ isPlayer1Winner, isPlayer2Winner });
       const isWinner = await getGameOutcome(
         playedHand,
         gameDetails.player2.hand,
@@ -63,14 +68,10 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     gameDetails.player1.address,
     gameDetails.player2.address,
     gameDetails.player2.hand,
-    // gameDetails.stake,
     gameId,
-    // gamePhase,
     playedHand,
     setWinner,
   ]);
-
-  var remainingTime = 1;
 
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
@@ -79,7 +80,12 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
           gameDetails.stake > 0 ? (
             <WithdrawDeposit />
           ) : (
-            <div>You have withdrawn your deposit</div>
+            <>
+              <p>You have withdrawn your deposit</p>
+              <Button size='small' onClick={() => navigate('/')}>
+                New game
+              </Button>
+            </>
           )
         ) : (
           <div>Awaiting Player 2's move</div>
@@ -89,7 +95,10 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     [GamePhase.Reveal]: (
       <>
         {remainingTime === 0 ? (
-          <div>You didn't reveal the commit on time. Player 2 won.</div>
+          <>
+            <h3>No Moves. No Victory.</h3>
+            <p>You didn't reveal the commit on time. Player 2 won.</p>
+          </>
         ) : (
           <RevealCommit
             hiddenHand={gameDetails.player1.hiddenHand}
@@ -102,16 +111,28 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     [GamePhase.GameOver]: (
       <>
         {winner === gameDetails.player1.address ? (
-          <div>Your deposit and rewards have been sent to you.</div>
+          <>
+            <h3>Congrads! You won 🎉</h3>
+            <p>Your Rewards are En Route!</p>
+            <Button size='small' onClick={() => navigate('/')}>
+              New game
+            </Button>
+          </>
         ) : (
-          <div>
-            Player 2 grabbed your stake. Keep calm and take a shot again.
-          </div>
+          <>
+            <h3>Player 2 swiped your Ethers 😔</h3>
+            <p>Keep calm and take a shot again</p>
+            <Button size='small' onClick={() => navigate('/')}>
+              New game
+            </Button>
+          </>
         )}
       </>
     ),
   };
 
+  if (account && !isAddressEqual(gameDetails.player1.address, account))
+    return null;
   return (
     <Container>{remainingTime !== null && renderMap[gamePhase]}</Container>
   );

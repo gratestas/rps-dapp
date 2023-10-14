@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+export type CallbackFn = () => void;
 export type ValidationFn<T, U = any> = (
   values: Partial<T>,
   optionalArg?: U
@@ -29,7 +30,11 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
   initialValues,
   validate,
   optionalArg,
-}: Props<T> & { optionalArg?: U }): FormValidationReturn<T> => {
+  update,
+}: Props<T> & {
+  optionalArg?: U;
+  update?: CallbackFn;
+}): FormValidationReturn<T> => {
   const [values, setValues] = useState<T>((initialValues || {}) as T);
   const [touched, setTouched] = useState<TouchedRecord<T>>({} as T);
   const [errors, setErrors] = useState<ErrorRecord<T>>(
@@ -43,6 +48,8 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
     const newErrors = validate({ ...values, [name]: value }, optionalArg);
     setValues({ ...values, [name]: value });
     setErrors({ ...errors, [name]: newErrors[name as keyof T] || '' });
+
+    update && update();
   };
 
   const handleBlur = (
@@ -50,9 +57,10 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
   ) => {
     const { name } = e.target;
     setTouched({ ...touched, [name]: true });
+    update && update();
   };
 
-  const hasError = Object.keys(errors).some((error) => error !== '');
+  const hasError = Object.values(errors).some((error) => error !== '');
 
   return { values, errors, hasError, touched, handleChange, handleBlur };
 };

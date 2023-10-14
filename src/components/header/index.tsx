@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import AccountPanel from '../accountPanel';
+import { Link } from 'react-router-dom';
 
 const StyledHeader = styled.header`
   width: '100%';
@@ -24,11 +25,13 @@ const Logo = styled.div`
 const Header = () => {
   return (
     <StyledHeader>
-      <Logo>
-        <span>Rock.</span>
-        <span>Paper.</span>
-        <span>Scissors.</span>
-      </Logo>
+      <Link to='/'>
+        <Logo>
+          <span>Rock.</span>
+          <span>Paper.</span>
+          <span>Scissors.</span>
+        </Logo>
+      </Link>
       <AccountPanel />
     </StyledHeader>
   );

@@ -8,8 +8,16 @@ const GlobalStyle = createGlobalStyle`
     font-weight: 500;
     font-size: 40px;
   }
-  h3{
+  h3,h4{
     font-weight:500;
+    margin-top:10px;
+    margin-bottom:8px;
+  }
+  p{
+    margin-top:4px;
+  }
+  a{
+    text-decoration:none;
   }
 `;
 

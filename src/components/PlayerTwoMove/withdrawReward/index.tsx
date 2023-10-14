@@ -1,14 +1,14 @@
 import { useParams } from 'react-router-dom';
-import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { Address, Hash } from 'viem';
+
+import Button from '../../button';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
-import Button from '../../button';
 
 const WithdrawReward = () => {
   const { id: gameId } = useParams();
@@ -19,7 +19,6 @@ const WithdrawReward = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleWithdrawal = async () => {
-    console.log('deposit withdrawn');
     if (!account) return;
     try {
       setIsLoading(true);
@@ -41,7 +40,7 @@ const WithdrawReward = () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 3,
+          confirmations: 2,
           hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);

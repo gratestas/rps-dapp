@@ -38,12 +38,28 @@ export const Input = styled.input`
 `;
 
 export const StyledSvg = styled.svg`
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   color: #5ee274;
 `;
 
 export const ValidationError = styled.p`
   font-size: 16px;
   color: red;
+`;
+
+export const ButtonRow = styled.div`
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+`;
+
+export const VerificationMessage = styled.span<{ $isVerified: boolean }>`
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 6px 0;
+  color: ${(props) => (props.$isVerified ? '#48af62' : '#d13f3f')};
 `;
