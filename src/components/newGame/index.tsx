@@ -50,7 +50,7 @@ const NewGame: React.FC = () => {
     e.preventDefault();
 
     try {
-      if (hasError) return;
+      if (!account || hasError) return;
       setIsLoading(true);
       const hiddenHand = await (publicClient as any).readContract({
         ...hasherContract,
@@ -80,7 +80,7 @@ const NewGame: React.FC = () => {
         const receipt: TransactionReceipt = await (
           publicClient as any
         ).waitForTransactionReceipt({
-          confirmations: 3,
+          confirmations: 2,
           hash: txHash,
         });
 
