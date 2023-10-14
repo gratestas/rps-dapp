@@ -22,6 +22,7 @@ type FormValidationReturn<T> = {
   handleBlur: (
     e: React.FocusEvent<HTMLInputElement & HTMLSelectElement>
   ) => void;
+  hasError: boolean;
 };
 
 const useFormValidation = <T extends Record<keyof T, any>, U = any>({
@@ -51,7 +52,9 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
     setTouched({ ...touched, [name]: true });
   };
 
-  return { values, errors, touched, handleChange, handleBlur };
+  const hasError = Object.keys(errors).some((error) => error !== '');
+
+  return { values, errors, hasError, touched, handleChange, handleBlur };
 };
 
 export default useFormValidation;

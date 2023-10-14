@@ -34,7 +34,7 @@ const NewGame: React.FC = () => {
   const { account } = useWeb3Connection();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { values, errors, touched, handleChange, handleBlur } =
+  const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<GameFormState>({
       initialValues,
       validate,
@@ -42,9 +42,6 @@ const NewGame: React.FC = () => {
     });
 
   const [txHash, setTxHash] = useState<Hash>();
-
-  const hasError = Object.values(errors).some((error) => error !== '');
-  console.log({ hasError });
 
   const handleCreateGame = async (e: React.FormEvent) => {
     e.preventDefault();

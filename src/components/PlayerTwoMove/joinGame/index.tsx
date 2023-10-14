@@ -31,7 +31,7 @@ const JoinGame = () => {
 
   const { account } = useWeb3Connection();
   const { setGamePhase } = useGameContext();
-  const { values, errors, touched, handleChange, handleBlur } =
+  const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<FormState>({
       initialValues: { move: PlayerMove.Null },
       validate: validate,
@@ -43,7 +43,7 @@ const JoinGame = () => {
       setIsLoading(true);
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 3,
+          confirmations: 2,
           hash: txHash,
         });
         setGamePhase(GamePhase.Reveal);
@@ -56,12 +56,10 @@ const JoinGame = () => {
     })();
   }, [revalidator, setGamePhase, txHash]);
 
-  const hasError = Object.values(errors).some((error) => error !== '');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // if (!move || !gameDetails.stake || !account) return;
-    if (hasError) return;
+    if (!account || hasError) return;
     setIsLoading(true);
     try {
       const txHash_ = await (walletClient as any).writeContract({
@@ -107,7 +105,12 @@ const JoinGame = () => {
           ) : null}
         </FormGroup>
 
-        <Button type='submit' size='small' isLoading={isLoading}>
+        <Button
+          type='submit'
+          size='small'
+          disabled={hasError}
+          isLoading={isLoading}
+        >
           Play
         </Button>
       </Form>
