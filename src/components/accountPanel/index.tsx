@@ -31,9 +31,9 @@ export default AccountPanel;
 
 const Wrapper = styled.div`
   position: relative;
-  padding: 6px 10px;
-  background: #bdcee4;
-  border-radius: 4rem;
+  padding: 16px 22px;
+  background: #0e0e0f;
+  border-radius: 2rem;
   display: flex;
   align-items: center;
   column-gap: 4px;
@@ -41,8 +41,9 @@ const Wrapper = styled.div`
 `;
 
 const Text = styled.div`
-  color: #1d447e;
-  font-weight: bold;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
 `;
 
 const ArrowDown = styled.div`
