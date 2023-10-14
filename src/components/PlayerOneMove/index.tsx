@@ -24,17 +24,17 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
   const [playedHand, setPlayedHand] = useState<PlayerMove>(
     storedPlayedHand ? JSON.parse(storedPlayedHand) : PlayerMove.Null
   );
-
+  /* 
   const remainingTime = useCountDown({
     lastAction: Number(gameDetails.lastAction),
     timeout: Number(gameDetails.timeout),
-  });
+  }); */
 
   //TODO: check the below condition later
   /*   var remainingTime = 1;
   var didPlayerTwoPlay = true;
   var gameDetailsstake = 1; */
-  console.log({ remainingTime });
+  // console.log({ remainingTime });
   useEffect(() => {
     // if (gamePhase !== GamePhase.GameOver) return;
 
@@ -70,6 +70,8 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     setWinner,
   ]);
 
+  var remainingTime = 1;
+
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
       <>
@@ -89,7 +91,11 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
         {remainingTime === 0 ? (
           <div>You didn't reveal the commit on time. Player 2 won.</div>
         ) : (
-          <RevealCommit playedHand={playedHand} setPlayedHand={setPlayedHand} />
+          <RevealCommit
+            hiddenHand={gameDetails.player1.hiddenHand}
+            playedHand={playedHand}
+            setPlayedHand={setPlayedHand}
+          />
         )}
       </>
     ),
