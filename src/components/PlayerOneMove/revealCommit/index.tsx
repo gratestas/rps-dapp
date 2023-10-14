@@ -1,35 +1,61 @@
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { Address, Hash, parseUnits } from 'viem';
 import { useParams, useRevalidator } from 'react-router-dom';
+
+import {
+  Form,
+  FormGroup,
+  FormRow,
+  Input,
+  Label,
+  Select,
+  StyledSvg,
+  ValidationError,
+} from './styled';
+
+import Button from '../../button';
+import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { GamePhase, useGameContext } from '../../../context/GameContext';
 
-import { rpsContract } from '../../../data/config';
+import { hasherContract, rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
-import Button from '../../button';
-import { PlayerMove } from '../../newGame/types';
+import useFormValidation from '../../../hooks/useFormValidation';
+import { RevealFormState } from './types';
+import { validate } from './validate';
 
 interface Props {
+  hiddenHand: Hash;
   playedHand: PlayerMove;
   setPlayedHand: React.Dispatch<React.SetStateAction<PlayerMove>>;
 }
 
-const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
+const RevealCommit: React.FC<Props> = ({
+  hiddenHand,
+  playedHand,
+  setPlayedHand,
+}) => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
   const { setGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
-  const [salt, setSalt] = useState<number | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
 
+  const { values, touched, errors, hasError, handleChange, handleBlur } =
+    useFormValidation({
+      initialValues: { move: PlayerMove.Null, salt: null },
+      validate,
+      optionalArg: isVerified,
+    });
+
   const handleReveal = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('revealing commit');
-    if (!account || playedHand === PlayerMove.Null || !salt) return;
+
+    if (!account || hasError) return;
     setIsLoading(true);
     try {
       const txHash_ = await (walletClient as any).writeContract({
@@ -37,7 +63,7 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
         account,
         abi: rpsContract.abi,
         functionName: 'solve',
-        args: [playedHand, parseUnits(salt.toString(), 18)],
+        args: [values.move, parseUnits(values.salt!.toString(), 18)],
       });
       localStorage.setItem('playedHand', JSON.stringify(playedHand));
       setTxHash(txHash_);
@@ -46,13 +72,21 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
       setIsLoading(false);
     }
   };
+  console.log({ errors });
+  console.log({ touched });
+  console.log({ values });
+  console.log({ isVerified });
+
+  useEffect(() => {
+    setPlayedHand(values.move);
+  }, [setPlayedHand, values.move]);
 
   useEffect(() => {
     (async () => {
       if (!txHash) return;
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 3,
+          confirmations: 2,
           hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);
@@ -65,6 +99,15 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
     })();
   }, [playedHand, revalidator, setGamePhase, txHash]);
 
+  const handleVerify = async () => {
+    const hash = await (publicClient as any).readContract({
+      ...hasherContract,
+      functionName: 'hash',
+      args: [playedHand, parseUnits(values.salt?.toString() || '', 18)],
+    });
+    setIsVerified(hash === hiddenHand);
+  };
+
   return (
     <div>
       <p>Player 2 has played. Reveal your commit.</p>
@@ -72,11 +115,10 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
         <FormGroup>
           <Label>Played Hand:</Label>
           <Select
-            value={playedHand}
-            onChange={(e) => {
-              const selectedMove = parseInt(e.target.value) as PlayerMove;
-              setPlayedHand(selectedMove);
-            }}
+            name='move'
+            value={values.move}
+            onChange={handleChange}
+            onBlur={handleBlur}
           >
             {Object.keys(PlayerMove).map((key) => {
               const moveValue = PlayerMove[key as keyof typeof PlayerMove];
@@ -90,17 +132,35 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
               );
             })}
           </Select>
+          {errors.move && touched.move ? (
+            <ValidationError>{errors.move}</ValidationError>
+          ) : null}
         </FormGroup>
         <FormGroup>
           <Label>Secret code</Label>
-          <Input
-            type='number'
-            value={salt || ''}
-            onChange={(e) => setSalt(Number(e.target.value) || null)}
-          />
+          <FormRow>
+            <Input
+              type='number'
+              name='salt'
+              value={values.salt || ''}
+              onChange={handleChange}
+              onBlur={handleBlur}
+            />
+            <Button type='button' size='small' onClick={handleVerify}>
+              {isVerified ? <CheckIcon /> : 'Verify'}
+            </Button>
+          </FormRow>
+          {errors.salt && touched.salt ? (
+            <ValidationError>{errors.salt}</ValidationError>
+          ) : null}
         </FormGroup>
 
-        <Button type='submit' size='small' isLoading={isLoading}>
+        <Button
+          type='submit'
+          size='small'
+          disabled={!isVerified}
+          isLoading={isLoading}
+        >
           Reveal
         </Button>
       </Form>
@@ -110,34 +170,36 @@ const RevealCommit: React.FC<Props> = ({ playedHand, setPlayedHand }) => {
 
 export default RevealCommit;
 
-const Form = styled.form`
-  text-align: left;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  font-size: 16px;
-  display: block;
-  margin-bottom: 5px;
-`;
-
-const Select = styled.select`
-  font-size: 16px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-`;
-
-const Input = styled.input`
-  font-size: 16px;
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-`;
+/* const ChevronDownIcon = () => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width='24'
+    height='24'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className='lucide lucide-chevron-down'
+  >
+    <path d='m6 9 6 6 6-6' />
+  </svg>
+);
+ */
+const CheckIcon = () => (
+  <StyledSvg
+    xmlns='http://www.w3.org/2000/svg'
+    width='24'
+    height='24'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className='lucide lucide-check'
+  >
+    <polyline points='20 6 9 17 4 12' />
+  </StyledSvg>
+);
