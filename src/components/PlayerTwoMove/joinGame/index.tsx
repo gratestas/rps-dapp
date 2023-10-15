@@ -14,8 +14,11 @@ import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { GamePhase, useGameContext } from '../../../context/GameContext';
-import { GameDetails } from '../../../utils/readContract';
+import {
+  GameDetails,
+  GamePhase,
+  useGameContext,
+} from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';

@@ -1,28 +1,27 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
-import { Address, isAddress, isAddressEqual } from 'viem';
+import { Address, Hash, isAddressEqual } from 'viem';
 
 import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';
-
-import { GamePhase, useGameContext } from '../../context/GameContext';
-import useCountDown from '../../hooks/useCountDown';
-import { GameDetails, getGameOutcome } from '../../utils/readContract';
-import { PlayerMove } from '../newGame/types';
-import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import Button from '../button';
 
-interface Props {
-  winner: Address;
-  setWinner: React.Dispatch<React.SetStateAction<Address>>;
-}
-const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
+import {
+  GameDetails,
+  GamePhase,
+  useGameContext,
+} from '../../context/GameContext';
+import { useWeb3Connection } from '../../context/Web3ConnectionContext';
+import useCountDown from '../../hooks/useCountDown';
+import { PlayerMove } from '../newGame/types';
+
+const PlayerOneMove: React.FC = () => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
   const { id: gameId } = useParams();
   const navigate = useNavigate();
 
-  const { gamePhase } = useGameContext();
+  const { gamePhase, setGameOutcome, outcome } = useGameContext();
   const { account } = useWeb3Connection();
 
   const storedPlayedHand = localStorage.getItem('playedHand');
@@ -35,42 +34,28 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     timeout: Number(gameDetails.timeout),
   });
 
-  //TODO: check the below condition later
-  /*   var remainingTime = 1;
-  var didPlayerTwoPlay = true;
-  var gameDetailsstake = 1; */
-  // console.log({ remainingTime });
   useEffect(() => {
-    // if (gamePhase !== GamePhase.GameOver) return;
+    if (gamePhase !== GamePhase.GameOver) return;
 
     (async () => {
-      if (
+      /*    if (
         playedHand === PlayerMove.Null &&
         gameDetails.player2.hand === PlayerMove.Null
       )
-        return;
-      const [isPlayer1Winner, isPlayer2Winner] = await Promise.all([
-        getGameOutcome(playedHand, gameDetails.player2.hand, gameId as Address),
-        getGameOutcome(gameDetails.player2.hand, playedHand, gameId as Address),
-      ]);
-      console.log({ isPlayer1Winner, isPlayer2Winner });
-      const isWinner = await getGameOutcome(
-        playedHand,
-        gameDetails.player2.hand,
-        gameId as Address
-      );
-      console.log({ isWinner });
-      setWinner(
-        isWinner ? gameDetails.player1.address : gameDetails.player2.address
-      );
+        return; */
+      console.log({ playedHand });
+      console.log('plyaer2 hand', gameDetails.player2.hand);
+      await setGameOutcome(playedHand, gameId as Hash, gameDetails);
     })();
   }, [
+    gameDetails,
     gameDetails.player1.address,
     gameDetails.player2.address,
     gameDetails.player2.hand,
     gameId,
+    gamePhase,
     playedHand,
-    setWinner,
+    setGameOutcome,
   ]);
 
   const renderMap = {
@@ -101,7 +86,7 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
           </>
         ) : (
           <RevealCommit
-            hiddenHand={gameDetails.player1.hiddenHand}
+            hiddenHand={gameDetails.player1.hiddenHand as Hash}
             playedHand={playedHand}
             setPlayedHand={setPlayedHand}
           />
@@ -110,7 +95,7 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
     ),
     [GamePhase.GameOver]: (
       <>
-        {winner === gameDetails.player1.address ? (
+        {outcome.isPlayer1Winner && (
           <>
             <h3>Congrads! You won 🎉</h3>
             <p>Your Rewards are En Route!</p>
@@ -118,7 +103,8 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
               New game
             </Button>
           </>
-        ) : (
+        )}
+        {outcome.isPlayer2Winner && (
           <>
             <h3>Player 2 swiped your Ethers 😔</h3>
             <p>Keep calm and take a shot again</p>
@@ -127,6 +113,7 @@ const PlayerOneMove: React.FC<Props> = ({ winner, setWinner }) => {
             </Button>
           </>
         )}
+        {outcome.isTie && <div>It's a tie</div>}
       </>
     ),
   };

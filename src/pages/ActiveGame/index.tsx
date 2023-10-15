@@ -1,4 +1,4 @@
-import { Address, formatEther, isAddressEqual, zeroAddress } from 'viem';
+import { Address, formatEther } from 'viem';
 import {
   LoaderFunction,
   LoaderFunctionArgs,
@@ -6,26 +6,16 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
-import {
-  Badge,
-  Card,
-  CardContainer,
-  Container,
-  PlayerInfo,
-  Timer,
-  Title,
-} from './styled';
-
-import { Player, getGameDetails } from '../../utils/readContract';
-import { getLabel, shortenAddress } from '../../utils/shortenAddress';
-import { convertUnixToDate, formatTime } from '../../utils/time';
 import { LoaderData } from './types';
-import { useWeb3Connection } from '../../context/Web3ConnectionContext';
-import PlayerTwoMove from '../../components/PlayerTwoMove';
-import PlayerOneMove from '../../components/PlayerOneMove';
-import { useState } from 'react';
+import { CardContainer, Container, Title } from './styled';
+
+import PlayerCard from '../../components/playerCard';
+
 import { GamePhase, useGameContext } from '../../context/GameContext';
+import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import useCountDown from '../../hooks/useCountDown';
+import { getGameDetails } from '../../utils/readContract';
+import { convertUnixToDate } from '../../utils/time';
 
 export const loader = (async ({ params }: LoaderFunctionArgs) => {
   return await getGameDetails(params.id as Address);
@@ -33,56 +23,24 @@ export const loader = (async ({ params }: LoaderFunctionArgs) => {
 
 const ActiveGame: React.FC = () => {
   const gameDetails = useLoaderData() as LoaderData<typeof loader>;
-  const { account } = useWeb3Connection();
-  const { gamePhase } = useGameContext();
   const navigate = useNavigate();
+
+  const { account } = useWeb3Connection();
+  const { gamePhase, outcome } = useGameContext();
 
   const remainingTime = useCountDown({
     lastAction: Number(gameDetails.lastAction),
     timeout: Number(gameDetails.timeout),
   });
 
-  const playerTurn = {
-    [GamePhase.PlayerTwoPlaying]: gameDetails.player2.address,
-    [GamePhase.Reveal]: gameDetails.player1.address,
-    [GamePhase.GameOver]: zeroAddress,
+  console.log({ remainingTime });
+
+  const turnToPlay = {
+    [gameDetails.player1.address]: gamePhase === GamePhase.Reveal,
+    [gameDetails.player2.address]: gamePhase === GamePhase.PlayerTwoPlaying,
   };
 
-  const [winner, setWinner] = useState<Address>(zeroAddress);
-  const hasWinner = !isAddressEqual(winner, zeroAddress);
-  console.log({ winner });
-  console.log({ hasWinner });
-
-  const playerCard = (player: Player, isPlayerOne: boolean) => {
-    const isThisPlayerWinner = isAddressEqual(winner, player.address);
-    return (
-      <Card>
-        {gamePhase === GamePhase.GameOver && hasWinner ? (
-          <Badge $winner={isThisPlayerWinner}>
-            {isThisPlayerWinner ? 'Winner' : 'Loser'}
-          </Badge>
-        ) : (
-          isAddressEqual(playerTurn[gamePhase], player.address) && (
-            <Timer>time left: {formatTime(remainingTime ?? 0)}</Timer>
-          )
-        )}
-        <PlayerInfo>
-          Player {isPlayerOne ? '1' : '2'}: {getLabel(player.address, account)}
-        </PlayerInfo>
-        <PlayerInfo>
-          Played Hand:
-          {isPlayerOne
-            ? shortenAddress(player.hiddenHand as Address)
-            : player.hand}
-        </PlayerInfo>
-        {isPlayerOne ? (
-          <PlayerOneMove winner={winner} setWinner={setWinner} />
-        ) : (
-          <PlayerTwoMove winner={winner} />
-        )}
-      </Card>
-    );
-  };
+  if (!account) return <div>Please connect to Metamask</div>;
   return (
     <Container>
       <button onClick={() => navigate(-1)}>go Back</button>
@@ -95,8 +53,23 @@ const ActiveGame: React.FC = () => {
         </p>
       </div>
       <CardContainer>
-        {playerCard(gameDetails.player1, true)}
-        {playerCard(gameDetails.player2, false)}
+        <PlayerCard
+          player={gameDetails.player1}
+          gamePhase={gamePhase}
+          account={account}
+          outcome={outcome}
+          remainingTime={remainingTime}
+          isPlayerTurn={turnToPlay[gameDetails.player1.address]}
+          isPlayerOne
+        />
+        <PlayerCard
+          player={gameDetails.player2}
+          gamePhase={gamePhase}
+          account={account}
+          outcome={outcome}
+          isPlayerTurn={turnToPlay[gameDetails.player2.address]}
+          remainingTime={remainingTime}
+        />
       </CardContainer>
     </Container>
   );

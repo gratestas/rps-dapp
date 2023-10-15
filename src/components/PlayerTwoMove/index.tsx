@@ -1,9 +1,12 @@
 import styled from 'styled-components';
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
-import { Address, isAddressEqual } from 'viem';
+import { isAddressEqual } from 'viem';
 
-import { GamePhase, useGameContext } from '../../context/GameContext';
-import { GameDetails } from '../../utils/readContract';
+import {
+  GameDetails,
+  GamePhase,
+  useGameContext,
+} from '../../context/GameContext';
 import useCountDown from '../../hooks/useCountDown';
 
 import JoinGame from './joinGame';
@@ -11,11 +14,11 @@ import WithdrawReward from './withdrawReward';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import Button from '../button';
 
-const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
+const PlayerTwoMove: React.FC = () => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
   const navigate = useNavigate();
 
-  const { gamePhase } = useGameContext();
+  const { gamePhase, outcome } = useGameContext();
   const { account } = useWeb3Connection();
 
   const remainingTime = useCountDown({
@@ -48,7 +51,7 @@ const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
     ),
     [GamePhase.GameOver]: (
       <>
-        {winner === gameDetails.player2.address ? (
+        {outcome.isPlayer2Winner && (
           <>
             <h3>Congrads! You won 🎉</h3>
             <p>Your Rewards are En Route!</p>
@@ -56,7 +59,8 @@ const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
               New game
             </Button>
           </>
-        ) : (
+        )}
+        {outcome.isPlayer1Winner && (
           <>
             <h3>Player 1 swiped your Ethers 😔</h3>
             <p>Keep calm and take a shot again!</p>
@@ -65,6 +69,7 @@ const PlayerTwoMove: React.FC<{ winner: Address }> = ({ winner }) => {
             </Button>
           </>
         )}
+        {outcome.isTie && <div>It's a tie!</div>}
       </>
     ),
   };

@@ -67,8 +67,6 @@ const NewGame: React.FC = () => {
       setIsLoading(false);
     }
   };
-  console.log({ touched });
-  console.log({ errors });
 
   useEffect(() => {
     (async () => {
@@ -77,7 +75,7 @@ const NewGame: React.FC = () => {
         const receipt: TransactionReceipt = await (
           publicClient as any
         ).waitForTransactionReceipt({
-          confirmations: 2,
+          confirmations: 3,
           hash: txHash,
         });
 

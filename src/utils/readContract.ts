@@ -1,21 +1,8 @@
-import { Address, Hash } from 'viem';
+import { Address } from 'viem';
 import { rpsContract } from '../data/config';
 import { publicClient } from '../config/provider';
 import { PlayerMove } from '../components/newGame/types';
-
-export type Player = {
-  address: Address;
-  hiddenHand?: Hash;
-  hand?: number;
-};
-
-export type GameDetails = {
-  player1: Player & { hiddenHand: Hash };
-  player2: Player & { hand: number };
-  stake: bigint;
-  lastAction: bigint;
-  timeout: bigint;
-};
+import { GameDetails } from '../context/GameContext';
 
 export const getGameDetails = async (
   rpsAddress: Address
@@ -72,7 +59,7 @@ export const getGameDetails = async (
   };
 };
 
-export const getGameOutcome = async (
+export const checkIfPlayerWinner = async (
   player1: PlayerMove,
   player2: PlayerMove,
   contractAddress: Address
