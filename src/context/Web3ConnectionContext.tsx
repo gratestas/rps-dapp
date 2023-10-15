@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react';
 import { Address, EIP1193Provider } from 'viem';
+import { defaultChain } from '../const';
 
 type Web3ConnectionContextProps = {
   account: Address | null;
@@ -33,34 +34,51 @@ export const Web3ConnectionProvider: React.FC<{
   const [provider, setProvider] = useState<InjectedProvider | null>(null);
   const [isConnected, setConnected] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      if (ethereum) {
-        try {
-          const _provider =
-            ethereum.providers?.find((p) => p.isMetaMask) || ethereum;
-          setProvider(_provider);
-        } catch (error) {
-          console.error('Error: Failed to connect to MetaMask:', error);
-        }
-      }
-    })();
-  }, []);
+  const autoConnectPreference = localStorage.getItem('autoConnect');
+  const shouldAutoConnect = autoConnectPreference === 'true';
 
   const connect = useCallback(async () => {
-    if (!provider) return;
-    const accounts = await provider?.request({
-      method: 'eth_requestAccounts',
-    });
-    setAccount(accounts[0]);
-    setConnected(!!accounts[0]);
-  }, [provider]);
+    if (!ethereum) return;
+
+    try {
+      const _provider =
+        ethereum.providers?.find((p) => p.isMetaMask) || ethereum;
+      setProvider(_provider);
+
+      const chainId = await _provider.request({ method: 'eth_chainId' });
+      if (`0x${defaultChain.id}` !== chainId) {
+        await _provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${defaultChain.id}` }],
+        });
+      }
+      const accounts = await _provider.request({
+        method: 'eth_requestAccounts',
+      });
+
+      setAccount(accounts[0]);
+      setConnected(!!accounts[0]);
+
+      localStorage.setItem('autoConnect', 'true');
+    } catch (error) {
+      console.error('Error: Failed to connect to MetaMask:', error);
+    }
+  }, []);
 
   const disconnect = () => {
     setAccount(null);
     setProvider(null);
     setConnected(false);
+    localStorage.removeItem('autoConnect');
   };
+
+  useEffect(() => {
+    (async () => {
+      if (shouldAutoConnect && ethereum) {
+        await connect();
+      }
+    })();
+  }, [connect, shouldAutoConnect]);
 
   useEffect(() => {
     (async () => {
