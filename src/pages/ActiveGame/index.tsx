@@ -3,11 +3,11 @@ import {
   LoaderFunction,
   LoaderFunctionArgs,
   useLoaderData,
-  useNavigate,
+  useParams,
 } from 'react-router-dom';
 
 import { LoaderData } from './types';
-import { CardContainer, Container, Title } from './styled';
+import { CardContainer, Container, GameAddress, Title } from './styled';
 
 import PlayerCard from '../../components/playerCard';
 
@@ -18,6 +18,10 @@ import { GamePhase } from '../../context/types';
 import useCountDown from '../../hooks/useCountDown';
 import { getGameDetails } from '../../utils/readContract';
 import { convertUnixToDate } from '../../utils/time';
+import { shortenAddress } from '../../utils/shortenAddress';
+import CopyCheckIcon from '../../components/icons/CopyCheck';
+import { copytoClipborad } from '../../utils/copyToClipboard';
+import Popup from '../../components/popup';
 
 export const loader = (async ({ params }: LoaderFunctionArgs) => {
   return await getGameDetails(params.id as Address);
@@ -25,7 +29,7 @@ export const loader = (async ({ params }: LoaderFunctionArgs) => {
 
 const ActiveGame: React.FC = () => {
   const gameDetails = useLoaderData() as LoaderData<typeof loader>;
-  const navigate = useNavigate();
+  const { id: gameId } = useParams();
 
   const { account } = useWeb3Connection();
   const { gamePhase, outcome } = useGameContext();
@@ -45,8 +49,13 @@ const ActiveGame: React.FC = () => {
   if (!account) return <div>Please connect to Metamask</div>;
   return (
     <Container>
-      <button onClick={() => navigate(-1)}>go Back</button>
       <Title>Active Game</Title>
+      <GameAddress>
+        {shortenAddress(gameId as Address)}
+        <Popup text='Copied!' onClick={() => copytoClipborad(gameId!)}>
+          <CopyCheckIcon />
+        </Popup>
+      </GameAddress>
       <div>
         <p>Stake: {formatEther(gameDetails.stake)} ETH</p>
         <p>Timeout: {Number(gameDetails.timeout) / 60} mins</p>

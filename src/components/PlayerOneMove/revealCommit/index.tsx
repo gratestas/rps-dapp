@@ -9,7 +9,6 @@ import {
   Input,
   Label,
   Select,
-  StyledSvg,
   ValidationError,
   VerificationMessage,
 } from './styled';
@@ -24,6 +23,7 @@ import { hasherContract, rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
 import useFormValidation from '../../../hooks/useFormValidation';
 import { validate } from './validate';
+import CheckIcon from '../../icons/Check';
 
 enum Action {
   verfiy = 'verify',
@@ -198,21 +198,3 @@ const RevealCommit: React.FC<Props> = ({
 };
 
 export default RevealCommit;
-
-const CheckIcon = () => (
-  <StyledSvg
-    xmlns='http://www.w3.org/2000/svg'
-    width='24'
-    height='24'
-    viewBox='0 0 24 24'
-    fill='none'
-    stroke='#1fa873'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    className='lucide lucide-check-circle-2'
-  >
-    <path d='M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z' />
-    <path d='m9 12 2 2 4-4' />
-  </StyledSvg>
-);

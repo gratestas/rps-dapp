@@ -9,7 +9,14 @@ export const Container = styled.div`
 
 export const Title = styled.h1`
   font-size: 36px;
-  margin-bottom: 20px;
+  margin-bottom: 4px;
+`;
+
+export const GameAddress = styled.span`
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+  margin-bottom: 1rem;
 `;
 
 export const CardContainer = styled.div`

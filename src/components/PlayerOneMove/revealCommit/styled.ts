@@ -37,12 +37,6 @@ export const Input = styled.input`
   box-sizing: border-box;
 `;
 
-export const StyledSvg = styled.svg`
-  width: 18px;
-  height: 18px;
-  color: #5ee274;
-`;
-
 export const ValidationError = styled.p`
   font-size: 16px;
   color: red;
