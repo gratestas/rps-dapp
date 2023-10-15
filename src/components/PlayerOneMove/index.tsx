@@ -7,14 +7,11 @@ import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';
 import Button from '../button';
 
-import {
-  GameDetails,
-  GamePhase,
-  useGameContext,
-} from '../../context/GameContext';
+import { useGameContext } from '../../context/GameContext';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import useCountDown from '../../hooks/useCountDown';
 import { PlayerMove } from '../newGame/types';
+import { GameDetails, GamePhase } from '../../context/types';
 
 const PlayerOneMove: React.FC = () => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
@@ -38,11 +35,6 @@ const PlayerOneMove: React.FC = () => {
     if (gamePhase !== GamePhase.GameOver) return;
 
     (async () => {
-      /*    if (
-        playedHand === PlayerMove.Null &&
-        gameDetails.player2.hand === PlayerMove.Null
-      )
-        return; */
       console.log({ playedHand });
       console.log('plyaer2 hand', gameDetails.player2.hand);
       await setGameOutcome(playedHand, gameId as Hash, gameDetails);

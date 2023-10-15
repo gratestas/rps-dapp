@@ -18,7 +18,7 @@ import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { useGameContext } from '../../../context/GameContext';
 
 import { hasherContract, rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
@@ -43,7 +43,7 @@ const RevealCommit: React.FC<Props> = ({
 }) => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
-  const { setGamePhase, updateGamePhase } = useGameContext();
+  const { updateGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
   const [isVerified, setIsVerified] = useState(false);
@@ -118,7 +118,6 @@ const RevealCommit: React.FC<Props> = ({
           confirmations: 2,
           hash: txHash,
         });
-        setGamePhase(GamePhase.GameOver);
         await updateGamePhase();
         revalidator.revalidate();
       } catch (error) {
@@ -127,7 +126,7 @@ const RevealCommit: React.FC<Props> = ({
         setIsLoading(false);
       }
     })();
-  }, [playedHand, revalidator, setGamePhase, txHash, updateGamePhase]);
+  }, [playedHand, revalidator, txHash, updateGamePhase]);
 
   const buttonState = {
     [Action.reveal]: { text: 'Reveal', type: 'submit' },

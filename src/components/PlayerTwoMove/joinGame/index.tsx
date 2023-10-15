@@ -14,15 +14,12 @@ import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import {
-  GameDetails,
-  GamePhase,
-  useGameContext,
-} from '../../../context/GameContext';
+import { useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
 import useFormValidation from '../../../hooks/useFormValidation';
+import { GameDetails } from '../../../context/types';
 
 const JoinGame = () => {
   const [txHash, setTxHash] = useState<Hash>();
@@ -33,7 +30,7 @@ const JoinGame = () => {
   const revalidator = useRevalidator();
 
   const { account } = useWeb3Connection();
-  const { setGamePhase, updateGamePhase } = useGameContext();
+  const { updateGamePhase } = useGameContext();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<FormState>({
       initialValues: { move: PlayerMove.Null },
@@ -49,7 +46,6 @@ const JoinGame = () => {
           confirmations: 2,
           hash: txHash,
         });
-        setGamePhase(GamePhase.Reveal);
         await updateGamePhase();
         revalidator.revalidate();
       } catch (error) {
@@ -58,7 +54,7 @@ const JoinGame = () => {
         setIsLoading(false);
       }
     })();
-  }, [revalidator, setGamePhase, txHash, updateGamePhase]);
+  }, [revalidator, txHash, updateGamePhase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

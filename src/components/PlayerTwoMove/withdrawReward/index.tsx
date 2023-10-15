@@ -5,7 +5,7 @@ import { Address, Hash } from 'viem';
 import Button from '../../button';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
@@ -13,7 +13,7 @@ import { publicClient, walletClient } from '../../../config/provider';
 const WithdrawReward = () => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
-  const { setGamePhase, updateGamePhase } = useGameContext();
+  const { updateGamePhase } = useGameContext();
 
   const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,6 @@ const WithdrawReward = () => {
           confirmations: 2,
           hash: txHash,
         });
-        setGamePhase(GamePhase.GameOver);
         await updateGamePhase();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
@@ -51,7 +50,7 @@ const WithdrawReward = () => {
         setIsLoading(false);
       }
     })();
-  }, [setGamePhase, txHash, updateGamePhase]);
+  }, [txHash, updateGamePhase]);
 
   return (
     <div>

@@ -6,7 +6,7 @@ import PlayerOneMove from '../PlayerOneMove';
 import PlayerTwoMove from '../PlayerTwoMove';
 import Badge from '../badge';
 
-import { GameOutcome, GamePhase, Player } from '../../context/GameContext';
+import { GameOutcome, GamePhase, Player } from '../../context/types';
 import { formatTime } from '../../utils/time';
 import { getLabel, shortenAddress } from '../../utils/shortenAddress';
 

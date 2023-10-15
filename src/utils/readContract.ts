@@ -2,7 +2,7 @@ import { Address } from 'viem';
 import { rpsContract } from '../data/config';
 import { publicClient } from '../config/provider';
 import { PlayerMove } from '../components/newGame/types';
-import { GameDetails } from '../context/GameContext';
+import { GameDetails } from '../context/types';
 
 export const getGameDetails = async (
   rpsAddress: Address

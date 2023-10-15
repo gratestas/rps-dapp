@@ -5,34 +5,14 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { Address, Hash } from 'viem';
-
-import useLocalStorage from '../hooks/useLocalStorage';
-import { PlayerMove } from '../components/newGame/types';
-import { checkIfPlayerWinner, getGameDetails } from '../utils/readContract';
-import { publicClient } from '../config/provider';
-import { rpsContract } from '../data/config';
 import { useParams } from 'react-router-dom';
+import { Address } from 'viem';
 
-export type Player = {
-  address: Address;
-  hiddenHand?: Hash;
-  hand?: number;
-};
+import { GameDetails, GameOutcome, GamePhase } from './types';
+import { PlayerMove } from '../components/newGame/types';
 
-export type GameDetails = {
-  player1: Player & { hiddenHand: Hash };
-  player2: Player & { hand: number };
-  stake: bigint;
-  lastAction: bigint;
-  timeout: bigint;
-};
-
-export enum GamePhase {
-  PlayerTwoPlaying,
-  Reveal,
-  GameOver,
-}
+import { checkIfPlayerWinner, getGameDetails } from '../utils/readContract';
+import { getGamePhase } from '../utils/getGamePhase';
 
 interface GameContextProps {
   gamePhase: GamePhase;
@@ -43,27 +23,15 @@ interface GameContextProps {
     gameId: Address,
     gameDetails: GameDetails
   ) => Promise<void>;
-  setGamePhase: React.Dispatch<React.SetStateAction<GamePhase>>;
 }
-
-export type GameOutcome = {
-  isPlayer1Winner: boolean | null;
-  isPlayer2Winner: boolean | null;
-  isTie: boolean | null;
-};
 
 const GameContext = createContext<GameContextProps | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [gamePhase, setGamePhase] = useLocalStorage<GamePhase>(
-    'gamePhase',
-    GamePhase.PlayerTwoPlaying
-  );
-
   const { id: gameId } = useParams();
-  const [fetchedGamePhase, setFetchedGamePhase] = useState<GamePhase>(
+  const [gamePhase, setGamePhase] = useState<GamePhase>(
     GamePhase.PlayerTwoPlaying
   );
   const [outcome, setOutcome] = useState<GameOutcome>({
@@ -87,7 +55,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       checkIfPlayerWinner(playedHand, gameDetails.player2.hand, gameId),
       checkIfPlayerWinner(gameDetails.player2.hand, playedHand, gameId),
     ]);
-    console.log({ isPlayer1Winner, isPlayer2Winner });
 
     const isTie = !isPlayer1Winner && !isPlayer2Winner;
     setOutcome({
@@ -98,23 +65,19 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateGamePhase = useCallback(async () => {
-    const gameDetails = await getGameDetails(gameId as Address);
-    console.log({ gameDetails });
+    try {
+      const gameDetails = await getGameDetails(gameId as Address);
 
-    let gamePhase_ = GamePhase.PlayerTwoPlaying;
+      const gamePhase_ = getGamePhase(
+        gameDetails.player2.hand,
+        Number(gameDetails.stake)
+      );
 
-    if (!!gameDetails.player1.hiddenHand && !!gameDetails.player2.hand)
-      gamePhase_ = GamePhase.Reveal;
-
-    if (
-      !!gameDetails.player1.hiddenHand &&
-      !!gameDetails.player2.hand &&
-      Number(gameDetails.stake) === 0
-    )
-      gamePhase_ = GamePhase.GameOver;
-    console.log({ gamePhase_ });
-    setFetchedGamePhase(gamePhase_);
-  }, [gameId]);
+      setGamePhase(gamePhase_);
+    } catch (error) {
+      console.error('GameContext Error updating game phase:', error);
+    }
+  }, [gameId, setGamePhase]);
 
   useEffect(() => {
     (async () => {
@@ -122,14 +85,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     })();
   }, [updateGamePhase]);
 
-  console.log({ fetchedGamePhase });
+  console.log({ gamePhase });
 
   return (
     <GameContext.Provider
       value={{
         gamePhase,
         updateGamePhase,
-        setGamePhase,
         outcome,
         setGameOutcome,
       }}

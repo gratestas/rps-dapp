@@ -11,8 +11,10 @@ import { CardContainer, Container, Title } from './styled';
 
 import PlayerCard from '../../components/playerCard';
 
-import { GamePhase, useGameContext } from '../../context/GameContext';
+import { useGameContext } from '../../context/GameContext';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
+import { GamePhase } from '../../context/types';
+
 import useCountDown from '../../hooks/useCountDown';
 import { getGameDetails } from '../../utils/readContract';
 import { convertUnixToDate } from '../../utils/time';

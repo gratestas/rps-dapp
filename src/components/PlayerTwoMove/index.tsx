@@ -2,17 +2,15 @@ import styled from 'styled-components';
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { isAddressEqual } from 'viem';
 
-import {
-  GameDetails,
-  GamePhase,
-  useGameContext,
-} from '../../context/GameContext';
-import useCountDown from '../../hooks/useCountDown';
-
 import JoinGame from './joinGame';
 import WithdrawReward from './withdrawReward';
-import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import Button from '../button';
+
+import { useGameContext } from '../../context/GameContext';
+import { GameDetails, GamePhase } from '../../context/types';
+
+import useCountDown from '../../hooks/useCountDown';
+import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 
 const PlayerTwoMove: React.FC = () => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;

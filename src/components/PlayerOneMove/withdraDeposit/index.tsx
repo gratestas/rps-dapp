@@ -1,18 +1,16 @@
+import { useEffect, useState } from 'react';
 import { useParams, useRevalidator } from 'react-router-dom';
 import { Address, Hash } from 'viem';
-import { goerli } from 'viem/chains';
+
+import Button from '../../button';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { rpsContract } from '../../../data/config';
-import { useEffect, useState } from 'react';
-import { useGameContext } from '../../../context/GameContext';
 import { publicClient, walletClient } from '../../../config/provider';
-import Button from '../../button';
 
 const WithdrawDeposit = () => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
-  const { setGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
   const [txHash, setTxHash] = useState<Hash>();
@@ -26,7 +24,6 @@ const WithdrawDeposit = () => {
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
-        chain: goerli,
         abi: rpsContract.abi,
         functionName: 'j2Timeout',
       });
@@ -52,7 +49,7 @@ const WithdrawDeposit = () => {
         setIsLoading(false);
       }
     })();
-  }, [revalidator, setGamePhase, txHash]);
+  }, [revalidator, txHash]);
 
   return (
     <div>
