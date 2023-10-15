@@ -33,7 +33,7 @@ const JoinGame = () => {
   const revalidator = useRevalidator();
 
   const { account } = useWeb3Connection();
-  const { setGamePhase } = useGameContext();
+  const { setGamePhase, updateGamePhase } = useGameContext();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<FormState>({
       initialValues: { move: PlayerMove.Null },
@@ -50,6 +50,7 @@ const JoinGame = () => {
           hash: txHash,
         });
         setGamePhase(GamePhase.Reveal);
+        await updateGamePhase();
         revalidator.revalidate();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
@@ -57,7 +58,7 @@ const JoinGame = () => {
         setIsLoading(false);
       }
     })();
-  }, [revalidator, setGamePhase, txHash]);
+  }, [revalidator, setGamePhase, txHash, updateGamePhase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

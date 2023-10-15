@@ -33,7 +33,7 @@ const ActiveGame: React.FC = () => {
     timeout: Number(gameDetails.timeout),
   });
 
-  console.log({ remainingTime });
+  // console.log({ remainingTime });
 
   const turnToPlay = {
     [gameDetails.player1.address]: gamePhase === GamePhase.Reveal,

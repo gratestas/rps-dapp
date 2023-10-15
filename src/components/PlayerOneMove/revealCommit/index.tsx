@@ -43,7 +43,7 @@ const RevealCommit: React.FC<Props> = ({
 }) => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
-  const { setGamePhase } = useGameContext();
+  const { setGamePhase, updateGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
   const [isVerified, setIsVerified] = useState(false);
@@ -119,6 +119,7 @@ const RevealCommit: React.FC<Props> = ({
           hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);
+        await updateGamePhase();
         revalidator.revalidate();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
@@ -126,7 +127,7 @@ const RevealCommit: React.FC<Props> = ({
         setIsLoading(false);
       }
     })();
-  }, [playedHand, revalidator, setGamePhase, txHash]);
+  }, [playedHand, revalidator, setGamePhase, txHash, updateGamePhase]);
 
   const buttonState = {
     [Action.reveal]: { text: 'Reveal', type: 'submit' },

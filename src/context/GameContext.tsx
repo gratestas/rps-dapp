@@ -1,9 +1,18 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from 'react';
 import { Address, Hash } from 'viem';
 
 import useLocalStorage from '../hooks/useLocalStorage';
 import { PlayerMove } from '../components/newGame/types';
-import { checkIfPlayerWinner } from '../utils/readContract';
+import { checkIfPlayerWinner, getGameDetails } from '../utils/readContract';
+import { publicClient } from '../config/provider';
+import { rpsContract } from '../data/config';
+import { useParams } from 'react-router-dom';
 
 export type Player = {
   address: Address;
@@ -27,6 +36,7 @@ export enum GamePhase {
 
 interface GameContextProps {
   gamePhase: GamePhase;
+  updateGamePhase: () => Promise<void>;
   outcome: GameOutcome;
   setGameOutcome: (
     playedHand: PlayerMove,
@@ -52,6 +62,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     GamePhase.PlayerTwoPlaying
   );
 
+  const { id: gameId } = useParams();
+  const [fetchedGamePhase, setFetchedGamePhase] = useState<GamePhase>(
+    GamePhase.PlayerTwoPlaying
+  );
   const [outcome, setOutcome] = useState<GameOutcome>({
     isPlayer1Winner: null,
     isPlayer2Winner: null,
@@ -83,9 +97,42 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const updateGamePhase = useCallback(async () => {
+    const gameDetails = await getGameDetails(gameId as Address);
+    console.log({ gameDetails });
+
+    let gamePhase_ = GamePhase.PlayerTwoPlaying;
+
+    if (!!gameDetails.player1.hiddenHand && !!gameDetails.player2.hand)
+      gamePhase_ = GamePhase.Reveal;
+
+    if (
+      !!gameDetails.player1.hiddenHand &&
+      !!gameDetails.player2.hand &&
+      Number(gameDetails.stake) === 0
+    )
+      gamePhase_ = GamePhase.GameOver;
+    console.log({ gamePhase_ });
+    setFetchedGamePhase(gamePhase_);
+  }, [gameId]);
+
+  useEffect(() => {
+    (async () => {
+      await updateGamePhase();
+    })();
+  }, [updateGamePhase]);
+
+  console.log({ fetchedGamePhase });
+
   return (
     <GameContext.Provider
-      value={{ gamePhase, setGamePhase, outcome, setGameOutcome }}
+      value={{
+        gamePhase,
+        updateGamePhase,
+        setGamePhase,
+        outcome,
+        setGameOutcome,
+      }}
     >
       {children}
     </GameContext.Provider>

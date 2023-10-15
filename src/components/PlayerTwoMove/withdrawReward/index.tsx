@@ -13,7 +13,7 @@ import { publicClient, walletClient } from '../../../config/provider';
 const WithdrawReward = () => {
   const { id: gameId } = useParams();
   const { account } = useWeb3Connection();
-  const { setGamePhase } = useGameContext();
+  const { setGamePhase, updateGamePhase } = useGameContext();
 
   const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
@@ -44,13 +44,14 @@ const WithdrawReward = () => {
           hash: txHash,
         });
         setGamePhase(GamePhase.GameOver);
+        await updateGamePhase();
       } catch (error) {
         console.error('Error: Failed to fetch Tx Receipt', error);
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [setGamePhase, txHash]);
+  }, [setGamePhase, txHash, updateGamePhase]);
 
   return (
     <div>
