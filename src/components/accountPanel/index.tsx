@@ -51,13 +51,6 @@ const Text = styled.div`
   border-left: 1px solid #ffffff9b;
 `;
 
-const ArrowDown = styled.div`
-  width: 8px;
-  height: 8px;
-  border-radius: 100%;
-  background: red;
-`;
-
 const DropDownPanel = styled.div`
   position: absolute;
   bottom: -60px;
