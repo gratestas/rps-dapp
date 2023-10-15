@@ -4,6 +4,7 @@ import ConnectButtion from '../connectButton';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import { shortenAddress } from '../../utils/shortenAddress';
 import { useState } from 'react';
+import WalletIcon from '../icons/Wallet';
 
 const AccountPanel = () => {
   const { isConnected, account, disconnect } = useWeb3Connection();
@@ -12,8 +13,9 @@ const AccountPanel = () => {
     <>
       {isConnected ? (
         <Wrapper onClick={() => setOpen((prevState) => !prevState)}>
+          <WalletIcon />
           <Text>{shortenAddress(account)}</Text>
-          <ArrowDown />
+          {/* <ArrowDown /> */}
           {isOpen && (
             <DropDownPanel onClick={() => disconnect()}>
               disconnect
@@ -31,9 +33,9 @@ export default AccountPanel;
 
 const Wrapper = styled.div`
   position: relative;
-  padding: 16px 22px;
-  background: #0e0e0f;
-  border-radius: 2rem;
+  padding: 14px 18px;
+  background: #212122;
+  border-radius: 0.4rem;
   display: flex;
   align-items: center;
   column-gap: 4px;
@@ -42,8 +44,11 @@ const Wrapper = styled.div`
 
 const Text = styled.div`
   color: #fff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
+  margin-left: 4px;
+  padding-left: 6px;
+  border-left: 1px solid #ffffff9b;
 `;
 
 const ArrowDown = styled.div`

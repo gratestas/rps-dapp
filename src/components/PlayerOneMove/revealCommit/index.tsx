@@ -135,7 +135,9 @@ const RevealCommit: React.FC<Props> = ({
 
   return (
     <div>
-      <p>Player 2 has played. Reveal your commit.</p>
+      <p style={{ marginBottom: '10px', color: '#585858', fontSize: '14px' }}>
+        Player 2 has played. Reveal your commit.
+      </p>
       <Form onSubmit={handleReveal}>
         <FormGroup>
           <Label>Played Hand:</Label>

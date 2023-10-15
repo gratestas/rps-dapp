@@ -39,8 +39,6 @@ const ActiveGame: React.FC = () => {
     timeout: Number(gameDetails.timeout),
   });
 
-  // console.log({ remainingTime });
-
   const turnToPlay = {
     [gameDetails.player1.address]: gamePhase === GamePhase.Reveal,
     [gameDetails.player2.address]: gamePhase === GamePhase.PlayerTwoPlaying,

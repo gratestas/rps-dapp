@@ -22,7 +22,7 @@ const Popup: React.FC<PopupProps> = ({
 
     setTimeout(() => {
       setIsVisible(false);
-    }, 3000);
+    }, 2000);
   };
 
   return (

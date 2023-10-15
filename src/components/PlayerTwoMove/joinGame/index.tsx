@@ -58,7 +58,6 @@ const JoinGame = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // if (!move || !gameDetails.stake || !account) return;
     if (!account || hasError) return;
     setIsLoading(true);
     try {
@@ -78,7 +77,9 @@ const JoinGame = () => {
   };
   return (
     <div>
-      <div>Choose your hand</div>
+      <div style={{ marginBottom: '10px', color: '#585858', fontSize: '14px' }}>
+        Choose your hand
+      </div>
       <Form onSubmit={handleSubmit}>
         <FormGroup>
           <Label>Move Choice:</Label>

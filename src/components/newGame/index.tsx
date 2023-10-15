@@ -72,12 +72,12 @@ const NewGame: React.FC = () => {
     (async () => {
       if (!txHash) return;
       try {
-        const receipt: TransactionReceipt = await (
-          publicClient as any
-        ).waitForTransactionReceipt({
-          confirmations: 3,
-          hash: txHash,
-        });
+        const receipt: TransactionReceipt = await fetchTransactionReceipt(
+          txHash,
+          {
+            retryCount: 3,
+          }
+        );
 
         navigate(`game/${receipt.contractAddress}`);
       } catch (error) {
@@ -87,7 +87,6 @@ const NewGame: React.FC = () => {
         // and maintaining game state, localStorage is used to keep track of states below.
         // Reqired to clean storage before each new game.
         localStorage.removeItem('playedHand');
-        localStorage.removeItem('gamePhase');
         setIsLoading(false);
       }
     })();
@@ -171,3 +170,38 @@ const NewGame: React.FC = () => {
 };
 
 export default NewGame;
+
+type FetchReceiptOptions = {
+  retryCount: number;
+};
+
+//TODO: improve later
+const fetchTransactionReceipt = async (
+  txHash: string,
+  options: FetchReceiptOptions
+): Promise<TransactionReceipt> => {
+  try {
+    const receipt = await (publicClient as any).waitForTransactionReceipt({
+      confirmations: 2,
+      hash: txHash,
+    });
+
+    if (!receipt && options.retryCount > 0) {
+      console.warn(`Retrying... (${options.retryCount} retries left)`);
+      return fetchTransactionReceipt(txHash, {
+        retryCount: options.retryCount - 1,
+      });
+    }
+
+    return receipt;
+  } catch (error) {
+    if (options.retryCount > 0) {
+      console.warn(`Retrying... (${options.retryCount} retries left)`);
+      return fetchTransactionReceipt(txHash, {
+        retryCount: options.retryCount - 1,
+      });
+    }
+
+    throw error;
+  }
+};

@@ -1,9 +1,30 @@
 import styled from 'styled-components';
 
-export const PlayerInfo = styled.div`
-  font-size: 16px;
+export const Info = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 10px;
+  color: #818181;
+
+  span {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    font-size: 18px;
+    color: #212122;
+  }
+`;
+
+export const PlayerAddress = styled.div`
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  margin-bottom: 1rem;
+  margin-top: 6px;
+  color: #818181;
+  font-weight: 500;
 `;
 
 export const Card = styled.div`

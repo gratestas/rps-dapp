@@ -17,6 +17,8 @@ export const GameAddress = styled.span`
   align-items: center;
   column-gap: 8px;
   margin-bottom: 1rem;
+  color: #818181;
+  font-weight: 500;
 `;
 
 export const CardContainer = styled.div`
