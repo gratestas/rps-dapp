@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useRouteLoaderData } from 'react-router-dom';
 import styled from 'styled-components';
-import { Address, Hash, isAddressEqual } from 'viem';
+import { Hash, isAddressEqual } from 'viem';
 
 import RevealCommit from './revealCommit';
 import WithdrawDeposit from './withdraDeposit';

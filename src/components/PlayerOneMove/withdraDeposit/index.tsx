@@ -1,12 +1,11 @@
 import { useParams, useRevalidator } from 'react-router-dom';
-import styled from 'styled-components';
 import { Address, Hash } from 'viem';
 import { goerli } from 'viem/chains';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { rpsContract } from '../../../data/config';
 import { useEffect, useState } from 'react';
-import { GamePhase, useGameContext } from '../../../context/GameContext';
+import { useGameContext } from '../../../context/GameContext';
 import { publicClient, walletClient } from '../../../config/provider';
 import Button from '../../button';
 
