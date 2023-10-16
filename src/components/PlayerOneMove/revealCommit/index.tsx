@@ -42,7 +42,7 @@ const RevealCommit: React.FC<Props> = ({
   setPlayedHand,
 }) => {
   const { id: gameId } = useParams();
-  const { account } = useWeb3Connection();
+  const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const { updateGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
@@ -95,6 +95,7 @@ const RevealCommit: React.FC<Props> = ({
     if (!account || hasError) return;
     setIsLoading(true);
     try {
+      await checkAndSwitchNetwork();
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,

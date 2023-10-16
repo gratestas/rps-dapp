@@ -31,9 +31,10 @@ const initialValues: GameFormState = {
 };
 
 const NewGame: React.FC = () => {
-  const { account } = useWeb3Connection();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<GameFormState>({
       initialValues,
@@ -55,6 +56,7 @@ const NewGame: React.FC = () => {
         args: [values.move, parseUnits(values.salt!.toString(), 18)],
       });
 
+      await checkAndSwitchNetwork();
       const txHash_ = await (walletClient as any).deployContract({
         ...rpsContract,
         account,

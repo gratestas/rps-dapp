@@ -29,7 +29,7 @@ const JoinGame = () => {
   const gameDetails = useRouteLoaderData('game') as GameDetails;
   const revalidator = useRevalidator();
 
-  const { account } = useWeb3Connection();
+  const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const { updateGamePhase } = useGameContext();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<FormState>({
@@ -61,6 +61,7 @@ const JoinGame = () => {
     if (!account || hasError) return;
     setIsLoading(true);
     try {
+      await checkAndSwitchNetwork();
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account: account,

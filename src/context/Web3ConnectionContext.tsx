@@ -14,6 +14,7 @@ type Web3ConnectionContextProps = {
   isConnected: boolean;
   connect: () => Promise<void>;
   disconnect: () => void;
+  checkAndSwitchNetwork: () => Promise<void>;
 };
 
 const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
@@ -72,6 +73,17 @@ export const Web3ConnectionProvider: React.FC<{
     localStorage.removeItem('autoConnect');
   };
 
+  const checkAndSwitchNetwork = async () => {
+    if (!provider) return;
+    const chainId = await provider.request({ method: 'eth_chainId' });
+    if (`0x${defaultChain.id}` !== chainId) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${defaultChain.id}` }],
+      });
+    }
+  };
+
   useEffect(() => {
     (async () => {
       if (shouldAutoConnect && ethereum) {
@@ -105,7 +117,14 @@ export const Web3ConnectionProvider: React.FC<{
 
   return (
     <Web3ConnectionContext.Provider
-      value={{ account, provider, isConnected, connect, disconnect }}
+      value={{
+        account,
+        provider,
+        isConnected,
+        connect,
+        disconnect,
+        checkAndSwitchNetwork,
+      }}
     >
       {children}
     </Web3ConnectionContext.Provider>

@@ -12,7 +12,7 @@ import { publicClient, walletClient } from '../../../config/provider';
 
 const WithdrawReward = () => {
   const { id: gameId } = useParams();
-  const { account } = useWeb3Connection();
+  const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const { updateGamePhase } = useGameContext();
 
   const [txHash, setTxHash] = useState<Hash>();
@@ -22,6 +22,7 @@ const WithdrawReward = () => {
     if (!account) return;
     try {
       setIsLoading(true);
+      await checkAndSwitchNetwork();
       const txHash_ = await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
