@@ -103,7 +103,14 @@ const PlayerOneMove: React.FC = () => {
             </Button>
           </>
         )}
-        {outcome.isTie && <div>It's a tie</div>}
+        {outcome.isTie && (
+          <>
+            <div>It's a tie</div>
+            <Button size='small' onClick={() => navigate('/')}>
+              New game
+            </Button>
+          </>
+        )}
       </>
     ),
   };
