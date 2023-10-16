@@ -5,6 +5,7 @@ import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import { shortenAddress } from '../../utils/shortenAddress';
 import { useState } from 'react';
 import WalletIcon from '../icons/Wallet';
+import LogoutIcon from '../icons/Logout';
 
 const AccountPanel = () => {
   const { isConnected, account, disconnect } = useWeb3Connection();
@@ -19,6 +20,7 @@ const AccountPanel = () => {
           {isOpen && (
             <DropDownPanel onClick={() => disconnect()}>
               disconnect
+              <LogoutIcon />
             </DropDownPanel>
           )}
         </Wrapper>
@@ -53,11 +55,19 @@ const Text = styled.div`
 
 const DropDownPanel = styled.div`
   position: absolute;
-  bottom: -60px;
-  width: min-content;
-  height: 40px;
-  border-radius: 2rem;
-  background: #a7a6a6;
+  left: 0;
+  right: 0;
+  bottom: -50px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  height: 30px;
+  border-radius: 0.4rem;
+  color: #2e2d2d;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   padding: 6px 20px;
