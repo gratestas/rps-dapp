@@ -43,8 +43,9 @@ const JoinGame = () => {
       setIsLoading(true);
       try {
         await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 2,
           hash: txHash,
+          confirmations: 1,
+          timeout: 40000,
         });
         await updateGamePhase();
         revalidator.revalidate();
