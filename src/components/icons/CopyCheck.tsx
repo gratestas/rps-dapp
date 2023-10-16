@@ -24,11 +24,10 @@ const CopyCheckIcon = () => {
 export default CopyCheckIcon;
 
 const StyledSvg = styled.svg`
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   color: #818181;
-  padding-top: 4px;
 
   &:hover {
     color: #363636;

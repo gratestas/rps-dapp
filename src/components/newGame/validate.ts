@@ -10,7 +10,7 @@ export const validate: ValidationFn<GameFormState, Address> = (
 
   if (values.move === PlayerMove.Null)
     newErrors.move = 'Please select your move.';
-  if (values.salt === null) newErrors.salt = 'Please enter a secret code.';
+  // if (values.salt === null) newErrors.salt = 'Please enter a secret code.';
   if (values.player2Address === '') {
     newErrors.player2Address = 'Please enter Player 2 address.';
   } else if (!isValidAddress(values.player2Address!)) {

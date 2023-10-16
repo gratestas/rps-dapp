@@ -26,17 +26,15 @@ const PlayerOneMove: React.FC = () => {
     storedPlayedHand ? JSON.parse(storedPlayedHand) : PlayerMove.Null
   );
 
-  const remainingTime = useCountDown({
+  /* const remainingTime = useCountDown({
     lastAction: Number(gameDetails.lastAction),
     timeout: Number(gameDetails.timeout),
-  });
+  }); */
 
   useEffect(() => {
     if (gamePhase !== GamePhase.GameOver) return;
 
     (async () => {
-      console.log({ playedHand });
-      console.log('plyaer2 hand', gameDetails.player2.hand);
       await setGameOutcome(playedHand, gameId as Hash, gameDetails);
     })();
   }, [
@@ -50,6 +48,7 @@ const PlayerOneMove: React.FC = () => {
     setGameOutcome,
   ]);
 
+  var remainingTime = 2;
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
       <>

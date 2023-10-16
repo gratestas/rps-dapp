@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Hash, TransactionReceipt, parseEther, parseUnits } from 'viem';
+import { Hash, TransactionReceipt, parseEther, parseUnits, toHex } from 'viem';
 
 import { validate } from './validate';
 import { GameFormState, PlayerMove } from './types';
@@ -14,6 +14,9 @@ import {
   Select,
   ValidationError,
   Input,
+  FormRow,
+  SaltMessage,
+  CopyText,
 } from './styled';
 
 import Button from '../button';
@@ -22,24 +25,49 @@ import { hasherContract, rpsContract } from '../../data/config';
 import { useWeb3Connection } from '../../context/Web3ConnectionContext';
 import { publicClient, walletClient } from '../../config/provider';
 import useFormValidation from '../../hooks/useFormValidation';
+import CopyCheckIcon from '../icons/CopyCheck';
+import { copytoClipborad } from '../../utils/copyToClipboard';
+import CheckIcon from '../icons/Check';
 
 const initialValues: GameFormState = {
   move: PlayerMove.Null,
-  salt: null,
   player2Address: '',
   stake: '',
+};
+
+const generateRandomNumber = () => {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return array[0] % 2 ** 256;
+};
+
+const generateSalt = async (move: PlayerMove): Promise<Hash> => {
+  const secret = generateRandomNumber();
+
+  const salt = await (publicClient as any).readContract({
+    ...hasherContract,
+    functionName: 'hash',
+    args: [move, toHex(secret)],
+  });
+
+  return salt;
 };
 
 const NewGame: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [generatedSalt, setGeneratedSalt] = useState<string | null>(null);
   const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<GameFormState>({
       initialValues,
       validate,
       optionalArg: account,
+      update: {
+        onChange: () => setGeneratedSalt(null),
+        inputName: 'move',
+      },
     });
 
   const [txHash, setTxHash] = useState<Hash>();
@@ -48,12 +76,12 @@ const NewGame: React.FC = () => {
     e.preventDefault();
 
     try {
-      if (!account || hasError) return;
+      if (!account || hasError || !generatedSalt) return;
       setIsLoading(true);
       const hiddenHand = await (publicClient as any).readContract({
         ...hasherContract,
         functionName: 'hash',
-        args: [values.move, parseUnits(values.salt!.toString(), 18)],
+        args: [values.move, generatedSalt],
       });
 
       await checkAndSwitchNetwork();
@@ -124,23 +152,19 @@ const NewGame: React.FC = () => {
           ) : null}
         </FormGroup>
         <FormGroup>
-          <Label>Secret code</Label>
-          <Input
-            type='number'
-            name='salt'
-            value={values.salt || ''}
-            onBlur={handleBlur}
-            onChange={handleChange}
+          <SaltGenerator
+            move={values.move}
+            generatedSalt={generatedSalt}
+            setGeneratedSalt={setGeneratedSalt}
           />
-          {errors.salt && touched.salt ? (
-            <ValidationError>{errors.salt}</ValidationError>
-          ) : null}
         </FormGroup>
         <FormGroup>
           <Label>Set your bet (ETH)</Label>
           <Input
             type='number'
             name='stake'
+            step='0.001'
+            min={0.001}
             placeholder='1 ETH'
             value={values.stake || ''}
             onBlur={handleBlur}
@@ -178,7 +202,7 @@ type FetchReceiptOptions = {
 };
 
 //TODO: improve later
-const fetchTransactionReceipt = async (
+export const fetchTransactionReceipt = async (
   txHash: string,
   options: FetchReceiptOptions
 ): Promise<TransactionReceipt> => {
@@ -206,4 +230,55 @@ const fetchTransactionReceipt = async (
 
     throw error;
   }
+};
+
+const SaltGenerator: React.FC<{
+  move: PlayerMove;
+  generatedSalt: string | null;
+  setGeneratedSalt: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({ move, generatedSalt, setGeneratedSalt }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleGenerateSalt = async () => {
+    try {
+      const salt = await generateSalt(move);
+      setGeneratedSalt(salt);
+      setIsCopied(false);
+    } catch (error) {
+      console.error('Error generating salt:', error);
+    }
+  };
+
+  return (
+    <>
+      <Label>Generate salt</Label>
+      <FormRow>
+        <Input type='text' disabled value={generatedSalt || ''} readOnly />
+        <Button size='small' onClick={handleGenerateSalt}>
+          generate
+        </Button>
+      </FormRow>
+      {generatedSalt && (
+        <SaltMessage>
+          Please copy and keep safe your salt.
+          <span
+            onClick={() => {
+              copytoClipborad(generatedSalt);
+              setIsCopied(true);
+            }}
+          >
+            {isCopied ? (
+              <CopyText>
+                <CheckIcon /> Copied
+              </CopyText>
+            ) : (
+              <CopyText>
+                <CopyCheckIcon /> Copy
+              </CopyText>
+            )}
+          </span>
+        </SaltMessage>
+      )}
+    </>
+  );
 };

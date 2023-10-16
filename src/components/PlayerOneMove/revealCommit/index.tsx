@@ -24,6 +24,7 @@ import { publicClient, walletClient } from '../../../config/provider';
 import useFormValidation from '../../../hooks/useFormValidation';
 import { validate } from './validate';
 import CheckIcon from '../../icons/Check';
+import { fetchTransactionReceipt } from '../../newGame';
 
 enum Action {
   verfiy = 'verify',
@@ -57,12 +58,15 @@ const RevealCommit: React.FC<Props> = ({
     useFormValidation({
       initialValues: { move: PlayerMove.Null, salt: null },
       validate,
-      update: () => {
-        setAction(Action.verfiy);
-        setVerificationMessage('');
+      update: {
+        onChange: () => {
+          setAction(Action.verfiy);
+          setVerificationMessage('');
+        },
       },
     });
-
+  console.log({ errors });
+  console.log({ values });
   useEffect(() => {
     setPlayedHand(values.move);
   }, [setPlayedHand, values.move]);
@@ -71,7 +75,7 @@ const RevealCommit: React.FC<Props> = ({
     const hash = await (publicClient as any).readContract({
       ...hasherContract,
       functionName: 'hash',
-      args: [playedHand, parseUnits(values.salt?.toString() || '', 18)],
+      args: [playedHand, values.salt || ''],
     });
 
     const isVerified_ = hash === hiddenHand;
@@ -101,7 +105,7 @@ const RevealCommit: React.FC<Props> = ({
         account,
         abi: rpsContract.abi,
         functionName: 'solve',
-        args: [values.move, parseUnits(values.salt!.toString(), 18)],
+        args: [values.move, values.salt],
       });
       localStorage.setItem('playedHand', JSON.stringify(playedHand));
       setTxHash(txHash_);
@@ -115,10 +119,7 @@ const RevealCommit: React.FC<Props> = ({
     (async () => {
       if (!txHash) return;
       try {
-        await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 2,
-          hash: txHash,
-        });
+        await fetchTransactionReceipt(txHash, { retryCount: 3 });
         await updateGamePhase();
         revalidator.revalidate();
       } catch (error) {
@@ -167,7 +168,7 @@ const RevealCommit: React.FC<Props> = ({
         <FormGroup>
           <Label>Secret code</Label>
           <Input
-            type='number'
+            type='string'
             name='salt'
             value={values.salt || ''}
             onChange={handleChange}

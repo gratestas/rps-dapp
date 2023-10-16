@@ -10,7 +10,6 @@ export enum PlayerMove {
 }
 export type GameFormState = {
   move: PlayerMove;
-  salt: number | null;
   player2Address: Address | string;
   stake: string;
 };
