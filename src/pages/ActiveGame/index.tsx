@@ -7,7 +7,13 @@ import {
 } from 'react-router-dom';
 
 import { LoaderData } from './types';
-import { CardContainer, Container, GameAddress, Title } from './styled';
+import {
+  CardContainer,
+  Container,
+  GameAddress,
+  Title,
+  WalletMessage,
+} from './styled';
 
 import PlayerCard from '../../components/playerCard';
 
@@ -44,7 +50,9 @@ const ActiveGame: React.FC = () => {
     [gameDetails.player2.address]: gamePhase === GamePhase.PlayerTwoPlaying,
   };
 
-  if (!account) return <div>Please connect to Metamask</div>;
+  if (!account)
+    return <WalletMessage>Please connect to Metamask</WalletMessage>;
+
   return (
     <Container>
       <Title>Active Game</Title>

@@ -30,3 +30,11 @@ export const CardContainer = styled.div`
     flex-direction: column;
   }
 `;
+
+export const WalletMessage = styled.div`
+  width: 100%;
+  height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
