@@ -61,11 +61,7 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
   ) => {
     const { name } = e.target;
     setTouched({ ...touched, [name]: true });
-    if (update && update.inputName && update.inputName === name) {
-      update.onChange();
-    } else if (update && !update.inputName) {
-      update.onChange();
-    }
+    update && !update.inputName && update.onChange();
   };
 
   const hasError = Object.values(errors).some((error) => error !== '');

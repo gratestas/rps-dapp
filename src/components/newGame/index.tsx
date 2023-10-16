@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Hash, TransactionReceipt, parseEther, parseUnits, toHex } from 'viem';
+import { Hash, TransactionReceipt, parseEther, toHex } from 'viem';
 
 import { validate } from './validate';
 import { GameFormState, PlayerMove } from './types';
@@ -71,6 +71,7 @@ const NewGame: React.FC = () => {
     });
 
   const [txHash, setTxHash] = useState<Hash>();
+  console.log({ values });
 
   const handleCreateGame = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +123,7 @@ const NewGame: React.FC = () => {
     })();
   }, [txHash, navigate]);
 
+  console.log({ errors });
   return (
     <Container>
       <Title>Create Game</Title>
@@ -187,7 +189,11 @@ const NewGame: React.FC = () => {
             <ValidationError>{errors.player2Address}</ValidationError>
           ) : null}
         </FormGroup>
-        <Button type='submit' disabled={hasError} isLoading={isLoading}>
+        <Button
+          type='submit'
+          disabled={hasError || !generatedSalt}
+          isLoading={isLoading}
+        >
           Create
         </Button>
       </Form>

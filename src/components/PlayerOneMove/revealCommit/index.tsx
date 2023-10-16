@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Address, Hash, parseUnits } from 'viem';
+import { Address, Hash } from 'viem';
 import { useParams, useRevalidator } from 'react-router-dom';
 
 import {
@@ -65,8 +65,7 @@ const RevealCommit: React.FC<Props> = ({
         },
       },
     });
-  console.log({ errors });
-  console.log({ values });
+
   useEffect(() => {
     setPlayedHand(values.move);
   }, [setPlayedHand, values.move]);

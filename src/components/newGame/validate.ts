@@ -8,7 +8,7 @@ export const validate: ValidationFn<GameFormState, Address> = (
 ) => {
   const newErrors: ErrorRecord<GameFormState> = {};
 
-  if (values.move === PlayerMove.Null)
+  if (Number(values.move) === PlayerMove.Null)
     newErrors.move = 'Please select your move.';
   // if (values.salt === null) newErrors.salt = 'Please enter a secret code.';
   if (values.player2Address === '') {

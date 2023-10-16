@@ -26,10 +26,10 @@ const PlayerOneMove: React.FC = () => {
     storedPlayedHand ? JSON.parse(storedPlayedHand) : PlayerMove.Null
   );
 
-  /* const remainingTime = useCountDown({
+  const remainingTime = useCountDown({
     lastAction: Number(gameDetails.lastAction),
     timeout: Number(gameDetails.timeout),
-  }); */
+  });
 
   useEffect(() => {
     if (gamePhase !== GamePhase.GameOver) return;
@@ -48,7 +48,6 @@ const PlayerOneMove: React.FC = () => {
     setGameOutcome,
   ]);
 
-  var remainingTime = 2;
   const renderMap = {
     [GamePhase.PlayerTwoPlaying]: (
       <>
