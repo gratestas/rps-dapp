@@ -51,11 +51,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       outcome.isTie !== null
     )
       return;
-    const [isPlayer1Winner, isPlayer2Winner] = await Promise.all([
+    const [isPlayer1Winner, isPlayer2Winner_] = await Promise.all([
       checkIfPlayerWinner(playedHand, gameDetails.player2.hand, gameId),
       checkIfPlayerWinner(gameDetails.player2.hand, playedHand, gameId),
     ]);
 
+    const isPlayer2Winner =
+      !isPlayer1Winner && playedHand === PlayerMove.Null
+        ? true
+        : isPlayer2Winner_;
     const isTie = !isPlayer1Winner && !isPlayer2Winner;
     setOutcome({
       isPlayer1Winner,
