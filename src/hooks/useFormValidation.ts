@@ -33,7 +33,7 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
   update,
 }: Props<T> & {
   optionalArg?: U;
-  update?: CallbackFn;
+  update?: { onChange: CallbackFn; inputName?: keyof T };
 }): FormValidationReturn<T> => {
   const [values, setValues] = useState<T>((initialValues || {}) as T);
   const [touched, setTouched] = useState<TouchedRecord<T>>({} as T);
@@ -49,7 +49,11 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
     setValues({ ...values, [name]: value });
     setErrors({ ...errors, [name]: newErrors[name as keyof T] || '' });
 
-    update && update();
+    if (update && update.inputName && update.inputName === name) {
+      update.onChange();
+    } else if (update && !update.inputName) {
+      update.onChange();
+    }
   };
 
   const handleBlur = (
@@ -57,7 +61,11 @@ const useFormValidation = <T extends Record<keyof T, any>, U = any>({
   ) => {
     const { name } = e.target;
     setTouched({ ...touched, [name]: true });
-    update && update();
+    if (update && update.inputName && update.inputName === name) {
+      update.onChange();
+    } else if (update && !update.inputName) {
+      update.onChange();
+    }
   };
 
   const hasError = Object.values(errors).some((error) => error !== '');
