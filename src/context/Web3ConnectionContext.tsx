@@ -15,6 +15,7 @@ type Web3ConnectionContextProps = {
   connect: () => Promise<void>;
   disconnect: () => void;
   checkAndSwitchNetwork: () => Promise<void>;
+  watchBlockNumber: (callback: (blockNumber: string) => void) => void;
 };
 
 const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
@@ -22,6 +23,16 @@ const ethereum = (window as any as { ethereum?: InjectedProvider }).ethereum;
 export type InjectedProvider = EIP1193Provider & {
   isMetaMask?: boolean;
   providers?: InjectedProvider[];
+};
+
+type Message = {
+  type: string; // apply stronger type
+  data: {
+    subscription: string;
+    result: {
+      number: string;
+    };
+  };
 };
 
 const Web3ConnectionContext = createContext<
@@ -32,6 +43,7 @@ export const Web3ConnectionProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [account, setAccount] = useState<Address | null>(null);
+
   const [provider, setProvider] = useState<InjectedProvider | null>(null);
   const [isConnected, setConnected] = useState(false);
 
@@ -84,6 +96,34 @@ export const Web3ConnectionProvider: React.FC<{
     }
   };
 
+  const watchBlockNumber = useCallback(
+    async (callback: (blockNumber: string) => void) => {
+      const subscriptionId = await (provider as any).request({
+        method: 'eth_subscribe',
+        params: ['newHeads'],
+      });
+
+      const listener = (message: Message) => {
+        if (message.type === 'eth_subscription') {
+          const lastBlockNumber = message.data.result.number;
+          if (message.data.subscription === subscriptionId && lastBlockNumber) {
+            callback(lastBlockNumber);
+            console.debug({ lastBlockNumber });
+          }
+        }
+      };
+
+      provider?.on('message', listener);
+
+      return async () =>
+        await (provider as any).request({
+          method: 'eth_unsubscribe',
+          params: [subscriptionId],
+        });
+    },
+    [provider]
+  );
+
   useEffect(() => {
     (async () => {
       if (shouldAutoConnect && ethereum) {
@@ -113,7 +153,7 @@ export const Web3ConnectionProvider: React.FC<{
         setAccount(accounts[0]);
       });
     };
-  }, [provider]);
+  }, [provider, watchBlockNumber]);
 
   return (
     <Web3ConnectionContext.Provider
@@ -124,6 +164,7 @@ export const Web3ConnectionProvider: React.FC<{
         connect,
         disconnect,
         checkAndSwitchNetwork,
+        watchBlockNumber,
       }}
     >
       {children}

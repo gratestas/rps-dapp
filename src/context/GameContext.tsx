@@ -13,10 +13,10 @@ import { PlayerMove } from '../components/newGame/types';
 
 import { checkIfPlayerWinner, getGameDetails } from '../utils/readContract';
 import { getGamePhase } from '../utils/getGamePhase';
+import { useWeb3Connection } from './Web3ConnectionContext';
 
 interface GameContextProps {
   gamePhase: GamePhase;
-  updateGamePhase: () => Promise<void>;
   outcome: GameOutcome;
   setGameOutcome: (
     playedHand: PlayerMove,
@@ -31,9 +31,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { id: gameId } = useParams();
+  const { watchBlockNumber } = useWeb3Connection();
   const [gamePhase, setGamePhase] = useState<GamePhase>(
     GamePhase.PlayerTwoPlaying
   );
+  const [blockNumber, setBlockNumber] = useState<string>('');
   const [outcome, setOutcome] = useState<GameOutcome>({
     isPlayer1Winner: null,
     isPlayer2Winner: null,
@@ -81,21 +83,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error('GameContext Error updating game phase:', error);
     }
-  }, [gameId, setGamePhase]);
+  }, [gameId]);
+
+  useEffect(() => {
+    watchBlockNumber(setBlockNumber);
+  }, [watchBlockNumber]);
 
   useEffect(() => {
     (async () => {
       await updateGamePhase();
     })();
-  }, [updateGamePhase]);
+  }, [blockNumber, updateGamePhase]);
 
-  console.log({ gamePhase });
+  console.debug({ gamePhase });
 
   return (
     <GameContext.Provider
       value={{
         gamePhase,
-        updateGamePhase,
         outcome,
         setGameOutcome,
       }}

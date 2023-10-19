@@ -17,14 +17,12 @@ import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { useGameContext } from '../../../context/GameContext';
 
 import { hasherContract, rpsContract } from '../../../data/config';
 import { publicClient, walletClient } from '../../../config/provider';
 import useFormValidation from '../../../hooks/useFormValidation';
 import { validate } from './validate';
 import CheckIcon from '../../icons/Check';
-import { fetchTransactionReceipt } from '../../newGame';
 
 enum Action {
   verfiy = 'verify',
@@ -44,11 +42,9 @@ const RevealCommit: React.FC<Props> = ({
 }) => {
   const { id: gameId } = useParams();
   const { account, checkAndSwitchNetwork } = useWeb3Connection();
-  const { updateGamePhase } = useGameContext();
   const revalidator = useRevalidator();
 
   const [isVerified, setIsVerified] = useState(false);
-  const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState('');
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
@@ -99,7 +95,7 @@ const RevealCommit: React.FC<Props> = ({
     setIsLoading(true);
     try {
       await checkAndSwitchNetwork();
-      const txHash_ = await (walletClient as any).writeContract({
+      await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
         abi: rpsContract.abi,
@@ -107,27 +103,12 @@ const RevealCommit: React.FC<Props> = ({
         args: [values.move, values.salt],
       });
       localStorage.setItem('playedHand', JSON.stringify(playedHand));
-      setTxHash(txHash_);
+      revalidator.revalidate();
     } catch (error) {
       console.error('Error: Failed to Reveal commit', error);
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    (async () => {
-      if (!txHash) return;
-      try {
-        await fetchTransactionReceipt(txHash, { retryCount: 3 });
-        await updateGamePhase();
-        revalidator.revalidate();
-      } catch (error) {
-        console.error('Error: Failed to fetch Tx Receipt', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [playedHand, revalidator, txHash, updateGamePhase]);
 
   const buttonState = {
     [Action.reveal]: { text: 'Reveal', type: 'submit' },

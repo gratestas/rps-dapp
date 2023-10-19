@@ -1,19 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useRevalidator } from 'react-router-dom';
-import { Address, Hash } from 'viem';
+import { Address } from 'viem';
 
 import Button from '../../button';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
 import { rpsContract } from '../../../data/config';
-import { publicClient, walletClient } from '../../../config/provider';
+import { walletClient } from '../../../config/provider';
 
 const WithdrawDeposit = () => {
   const { id: gameId } = useParams();
   const { account, checkAndSwitchNetwork } = useWeb3Connection();
   const revalidator = useRevalidator();
 
-  const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleWithdrawal = async () => {
@@ -22,35 +21,18 @@ const WithdrawDeposit = () => {
     try {
       setIsLoading(true);
       await checkAndSwitchNetwork();
-      const txHash_ = await (walletClient as any).writeContract({
+      await (walletClient as any).writeContract({
         address: gameId as Address,
         account,
         abi: rpsContract.abi,
         functionName: 'j2Timeout',
       });
-      setTxHash(txHash_);
+      revalidator.revalidate();
     } catch (error) {
       console.error('Error: Failed to withdraw deposit', error);
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    (async () => {
-      if (!txHash) return;
-      try {
-        await (publicClient as any).waitForTransactionReceipt({
-          confirmations: 2,
-          hash: txHash,
-        });
-        revalidator.revalidate();
-      } catch (error) {
-        console.error('Error: Failed to fetch Tx Receipt', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [revalidator, txHash]);
 
   return (
     <div>

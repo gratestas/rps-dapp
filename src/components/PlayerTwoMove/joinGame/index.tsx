@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Address, Hash } from 'viem';
+import React, { useState } from 'react';
+import { Address } from 'viem';
 import {
   useParams,
   useRevalidator,
@@ -14,15 +14,13 @@ import Button from '../../button';
 import { PlayerMove } from '../../newGame/types';
 
 import { useWeb3Connection } from '../../../context/Web3ConnectionContext';
-import { useGameContext } from '../../../context/GameContext';
 
 import { rpsContract } from '../../../data/config';
-import { publicClient, walletClient } from '../../../config/provider';
+import { walletClient } from '../../../config/provider';
 import useFormValidation from '../../../hooks/useFormValidation';
 import { GameDetails } from '../../../context/types';
 
 const JoinGame = () => {
-  const [txHash, setTxHash] = useState<Hash>();
   const [isLoading, setIsLoading] = useState(false);
 
   const { id: gameId } = useParams();
@@ -30,32 +28,11 @@ const JoinGame = () => {
   const revalidator = useRevalidator();
 
   const { account, checkAndSwitchNetwork } = useWeb3Connection();
-  const { updateGamePhase } = useGameContext();
   const { values, errors, hasError, touched, handleChange, handleBlur } =
     useFormValidation<FormState>({
       initialValues: { move: PlayerMove.Null },
       validate: validate,
     });
-
-  useEffect(() => {
-    (async () => {
-      if (!txHash) return;
-      setIsLoading(true);
-      try {
-        await (publicClient as any).waitForTransactionReceipt({
-          hash: txHash,
-          confirmations: 1,
-          timeout: 40000,
-        });
-        await updateGamePhase();
-        revalidator.revalidate();
-      } catch (error) {
-        console.error('Error: Failed to fetch Tx Receipt', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, [revalidator, txHash, updateGamePhase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +40,7 @@ const JoinGame = () => {
     setIsLoading(true);
     try {
       await checkAndSwitchNetwork();
-      const txHash_ = await (walletClient as any).writeContract({
+      await (walletClient as any).writeContract({
         address: gameId as Address,
         account: account,
         abi: rpsContract.abi,
@@ -71,7 +48,7 @@ const JoinGame = () => {
         args: [values.move],
         value: gameDetails.stake,
       });
-      setTxHash(txHash_);
+      revalidator.revalidate();
     } catch (error) {
       console.error('Error: Failed to invoke Play() function', error);
       setIsLoading(false);
