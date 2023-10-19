@@ -168,7 +168,7 @@ const NewGame: React.FC = () => {
         </FormGroup>
         <Button
           type='submit'
-          disabled={hasError || !generatedSalt}
+          disabled={hasError || !generatedSalt || isLoading}
           isLoading={isLoading}
         >
           Create

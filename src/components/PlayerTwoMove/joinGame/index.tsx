@@ -111,7 +111,7 @@ const JoinGame = () => {
         <Button
           type='submit'
           size='small'
-          disabled={hasError}
+          disabled={hasError || isLoading}
           isLoading={isLoading}
         >
           Play

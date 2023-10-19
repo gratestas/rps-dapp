@@ -45,7 +45,7 @@ const SaltGenerator: React.FC<{
       <Label>Generate salt</Label>
       <FormRow>
         <Input type='text' disabled value={generatedSalt || ''} readOnly />
-        <Button size='small' onClick={handleGenerateSalt}>
+        <Button type='button' size='small' onClick={handleGenerateSalt}>
           generate
         </Button>
       </FormRow>

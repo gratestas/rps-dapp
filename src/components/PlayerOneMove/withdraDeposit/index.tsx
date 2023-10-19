@@ -55,7 +55,12 @@ const WithdrawDeposit = () => {
   return (
     <div>
       <p>Player 2 didn't play on time</p>
-      <Button onClick={handleWithdrawal} size='small' isLoading={isLoading}>
+      <Button
+        onClick={handleWithdrawal}
+        size='small'
+        isLoading={isLoading}
+        disabled={isLoading}
+      >
         Withdraw deposit
       </Button>
     </div>

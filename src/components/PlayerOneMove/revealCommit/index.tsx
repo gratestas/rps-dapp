@@ -182,7 +182,7 @@ const RevealCommit: React.FC<Props> = ({
           <Button
             type={buttonState[action].type as 'button' | 'submit' | 'reset'}
             size='small'
-            disabled={hasError}
+            disabled={hasError || isLoading}
             isLoading={isLoading}
             onClick={handleVerify}
           >

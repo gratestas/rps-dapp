@@ -57,7 +57,12 @@ const WithdrawReward = () => {
     <div>
       <h3>Congrads! You won 🎉</h3>
       <p>Player 1 didn't play on time</p>
-      <Button onClick={handleWithdrawal} size='small' isLoading={isLoading}>
+      <Button
+        onClick={handleWithdrawal}
+        size='small'
+        isLoading={isLoading}
+        disabled={isLoading}
+      >
         Withdraw reward
       </Button>
     </div>
